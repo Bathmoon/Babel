@@ -1,4 +1,9 @@
-export interface Action {}
+import { Engine } from "./engine";
+import { Entity } from "./entity";
+
+export interface Action {
+  perform: (engine: Engine, entity: Entity) => void;
+}
 
 interface MovementMap {
   [key: string]: Action;
@@ -11,6 +16,16 @@ export class MovementAction implements Action {
   constructor(dx: number, dy: number) {
     this.dx = dx;
     this.dy = dy;
+  }
+
+  perform(engine: Engine, entity: Entity) {
+    const destX = entity.x + this.dx;
+    const destY = entity.y + this.dy;
+
+    if (!engine.gameMap.isInBounds(destX, destY)) return;
+    if (!engine.gameMap.tiles[destY][destX].isWalkable) return;
+
+    entity.move(this.dx, this.dy);
   }
 }
 
