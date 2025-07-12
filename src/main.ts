@@ -1,24 +1,31 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
+import * as ROT from "rot-js";
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+class Engine {
+  public static readonly WIDTH = 80;
+  public static readonly HEIGHT = 50;
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+  display: ROT.Display;
+
+  constructor() {
+    this.display = new ROT.Display({
+      width: Engine.WIDTH,
+      height: Engine.HEIGHT,
+    });
+  }
+
+  render() {
+    const x = Engine.WIDTH / 2;
+    const y = Engine.HEIGHT / 2;
+    this.display.draw(x, y, "Hello World", "#fff", "#000");
+  }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  const engine = new Engine();
+
+  const container = engine.display.getContainer()!;
+
+  document.body.appendChild(container);
+
+  engine.render();
+});
