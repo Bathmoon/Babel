@@ -1,6 +1,9 @@
+import * as ROT from "rot-js";
+
 import type { Tile } from "./tile-types";
 import { WALL_TILE } from "./tile-types";
 import { Display } from "rot-js";
+import { Entity } from "./entity";
 
 export class GameMap {
   width: number;
@@ -48,6 +51,38 @@ export class GameMap {
     }
   }
 
+  lightPasses(x: number, y: number): boolean {
+    // Make sure we don't try to check tiles that don't exist, being outside the map area
+    if (this.isInBounds(x, y)) {
+      return this.tiles[y][x].isTransparent;
+    }
+
+    return false;
+  }
+
+  updateFov(player: Entity) {
+    const fov = new ROT.FOV.PreciseShadowcasting(this.lightPasses.bind(this));
+    const viewDistance = 8;
+
+    // Reset visibility prior to checking
+    this.setTilesInvisible();
+
+    fov.compute(player.x, player.y, viewDistance, (x, y, _r, isVisible) => {
+      if (isVisible === 1) {
+        this.tiles[y][x].isVisible = true;
+        this.tiles[y][x].isSeen = true;
+      }
+    });
+  }
+
+  setTilesInvisible() {
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        this.tiles[y][x].isVisible = false;
+      }
+    }
+  }
+
   render() {
     for (let y = 0; y < this.tiles.length; y++) {
       const row = this.tiles[y];
@@ -55,13 +90,21 @@ export class GameMap {
       for (let x = 0; x < row.length; x++) {
         const tile = row[x];
 
-        this.display.draw(
-          x,
-          y,
-          tile.dark.symbol,
-          tile.dark.foreGroundColor,
-          tile.dark.backGroundColor,
-        );
+        let symbol = " ";
+        let foreGroundColor = "#fff";
+        let backGroundColor = "#000";
+
+        if (tile.isVisible) {
+          symbol = tile.light.symbol;
+          foreGroundColor = tile.light.foreGroundColor;
+          backGroundColor = tile.light.backGroundColor;
+        } else if (tile.isSeen) {
+          symbol = tile.dark.symbol;
+          foreGroundColor = tile.dark.foreGroundColor;
+          backGroundColor = tile.dark.backGroundColor;
+        }
+
+        this.display.draw(x, y, symbol, foreGroundColor, backGroundColor);
       }
     }
   }
