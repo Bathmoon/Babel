@@ -72,20 +72,23 @@ export function generateDungeon(
   const rooms: RectangularRoom[] = [];
 
   for (let count = 0; count < maxRooms; count++) {
+    // Generate random room size
     const width = generateRandomNumber(minSize, maxSize);
     const height = generateRandomNumber(minSize, maxSize);
 
+    // Generate random room location
     const x = generateRandomNumber(0, mapWidth - width - 1);
     const y = generateRandomNumber(0, mapHeight - height - 1);
 
+    // Generate room
     const newRoom = new RectangularRoom(x, y, width, height);
 
+    // Ensure the new room does not overlap with existing ones
     if (rooms.some((room) => room.isIntersecting(newRoom))) {
       continue;
     }
 
     dungeon.addRoom(x, y, newRoom.tiles);
-
     rooms.push(newRoom);
   }
 
