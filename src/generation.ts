@@ -40,8 +40,8 @@ class RectangularRoom {
     return {
       topLeftX: this.topLeftX,
       topLeftY: this.topLeftY,
-      bottomRightX: this.topLeftX + this.width,
-      bottomRightY: this.topLeftY + this.height,
+      bottomRightX: this.topLeftX + this.width - 1,
+      bottomRightY: this.topLeftY + this.height - 1,
     };
   }
 
@@ -170,7 +170,7 @@ export function generateDungeon(
 }
 
 function generateRandomNumber(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1) + min); // we add +1 to stay inclusive of our maximum range
+  return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 function* connectRooms(

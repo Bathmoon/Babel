@@ -54,8 +54,10 @@ export class GameMap {
       for (let currentX = x; currentX < relativeWidth; currentX++) {
         const roomX = currentX - x;
 
-        mapRow[currentX] = roomRow[roomX];
-        mapRow[currentX].roomPosition = [roomX, roomY];
+        if (this.isInBounds(currentX, currentY)) {
+          mapRow[currentX] = roomRow[roomX];
+          mapRow[currentX].roomPosition = [roomX, roomY];
+        }
       }
     }
   }
@@ -77,14 +79,9 @@ export class GameMap {
     this.setTilesInvisible();
 
     fov.compute(player.x, player.y, viewDistance, (x, y, _r, isVisible) => {
-      if (isVisible === 1) {
-        if (x in this.tiles && y in this.tiles[x]) {
-          this.tiles[y][x].isVisible = true;
-          this.tiles[y][x].isSeen = true;
-        } else {
-          console.log(player);
-          console.log(`Array out of bounds error at ${x}, ${y}`);
-        }
+      if (isVisible === 1 && this.isInBounds(x, y)) {
+        this.tiles[y][x].isVisible = true;
+        this.tiles[y][x].isSeen = true;
       }
     });
   }
