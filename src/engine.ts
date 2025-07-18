@@ -10,15 +10,14 @@ export class Engine {
   public static readonly HEIGHT = 50;
   public static readonly MAP_WIDTH = 80;
   public static readonly MAP_HEIGHT = 45;
+  public static readonly MAX_MONSTERS_PER_ROOM = 2;
 
   display: ROT.Display;
   gameMap: GameMap;
 
   player: Entity;
-  entities: Entity[];
 
-  constructor(entities: Entity[], player: Entity) {
-    this.entities = entities;
+  constructor(player: Entity) {
     this.player = player;
 
     this.display = new ROT.Display({
@@ -30,9 +29,10 @@ export class Engine {
     this.gameMap = generateDungeon(
       Engine.MAP_WIDTH,
       Engine.MAP_HEIGHT,
-      10,
-      5,
-      20,
+      10, // max rooms
+      5, // min size
+      20, // max size
+      Engine.MAX_MONSTERS_PER_ROOM,
       player,
       this.display,
     );
@@ -63,14 +63,5 @@ export class Engine {
 
   render() {
     this.gameMap.render();
-    this.entities.forEach((entity) => {
-      this.display.draw(
-        entity.x,
-        entity.y,
-        entity.symbol,
-        entity.foreGroundColor,
-        entity.backGroundColor,
-      );
-    });
   }
 }

@@ -9,20 +9,28 @@ export class GameMap {
   width: number;
   height: number;
   display: Display;
+  entities: Entity[];
 
   tiles: Tile[][];
 
-  constructor(width: number, height: number, display: Display) {
+  constructor(
+    width: number,
+    height: number,
+    display: Display,
+    entities: Entity[],
+  ) {
     this.width = width;
     this.height = height;
     this.display = display;
     this.tiles = new Array(this.height);
+    this.entities = entities;
 
     for (let y = 0; y < this.height; y++) {
       const row = new Array(this.width);
 
       for (let x = 0; x < this.width; x++) {
         row[x] = { ...WALL_TILE };
+        row[x].position = [x, y];
       }
 
       this.tiles[y] = row;
@@ -47,6 +55,7 @@ export class GameMap {
         const roomX = currentX - x;
 
         mapRow[currentX] = roomRow[roomX];
+        mapRow[currentX].roomPosition = [roomX, roomY];
       }
     }
   }
@@ -69,8 +78,13 @@ export class GameMap {
 
     fov.compute(player.x, player.y, viewDistance, (x, y, _r, isVisible) => {
       if (isVisible === 1) {
-        this.tiles[y][x].isVisible = true;
-        this.tiles[y][x].isSeen = true;
+        if (x in this.tiles && y in this.tiles[x]) {
+          this.tiles[y][x].isVisible = true;
+          this.tiles[y][x].isSeen = true;
+        } else {
+          console.log(player);
+          console.log(`Array out of bounds error at ${x}, ${y}`);
+        }
       }
     });
   }
@@ -107,5 +121,15 @@ export class GameMap {
         this.display.draw(x, y, symbol, foreGroundColor, backGroundColor);
       }
     }
+
+    this.entities.forEach((entity) => {
+      this.display.draw(
+        entity.x,
+        entity.y,
+        entity.symbol,
+        entity.foreGroundColor,
+        entity.backGroundColor,
+      );
+    });
   }
 }

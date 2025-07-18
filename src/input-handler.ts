@@ -24,7 +24,7 @@ export class MovementAction implements Action {
 
     if (!engine.gameMap.isInBounds(destX, destY)) return;
     if (!engine.gameMap.tiles[destY][destX].isWalkable) return;
-
+    console.log(`moving to ${destX}, ${destY}`);
     entity.move(this.dx, this.dy);
   }
 }

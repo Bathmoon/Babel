@@ -2,7 +2,14 @@ import { FLOOR_TILE, WALL_TILE } from "./tile-types";
 import type { Tile } from "./tile-types";
 import { GameMap } from "./game-map";
 import { Display } from "rot-js";
-import { Entity } from "./entity";
+import { Entity, spawnOrc, spawnTroll } from "./entity";
+
+interface Bounds {
+  topLeftX: number;
+  topLeftY: number;
+  bottomRightX: number;
+  bottomRightY: number;
+}
 
 class RectangularRoom {
   topLeftX: number;
@@ -27,6 +34,15 @@ class RectangularRoom {
     const centerY = this.topLeftY + Math.floor(this.height / 2);
 
     return [centerX, centerY];
+  }
+
+  get bounds(): Bounds {
+    return {
+      topLeftX: this.topLeftX,
+      topLeftY: this.topLeftY,
+      bottomRightX: this.topLeftX + this.width,
+      bottomRightY: this.topLeftY + this.height,
+    };
   }
 
   isIntersecting(otherRoom: RectangularRoom): boolean {
@@ -59,16 +75,60 @@ class RectangularRoom {
   }
 }
 
+/*
+  This function will take in a given room, the dungeon the room is being added to,
+  and the maximum number of monsters to add to the room
+*/
+function placeEntities(
+  room: RectangularRoom,
+  dungeon: GameMap,
+  maxMonsters: number,
+) {
+  const monsterCount = generateRandomNumber(0, maxMonsters);
+
+  for (let i = 0; i < monsterCount; i++) {
+    const bounds = room.bounds;
+    console.log(bounds);
+    const entityX = generateRandomNumber(
+      bounds.topLeftX + 1,
+      bounds.bottomRightX - 1,
+    );
+    const entityY = generateRandomNumber(
+      bounds.topLeftY + 1,
+      bounds.bottomRightY - 1,
+    );
+
+    console.log(entityX);
+    console.log(entityY);
+
+    if (
+      !dungeon.entities.some(
+        (entity) => entity.x == entityX && entity.y == entityY,
+      ) // check if an entity already exists at the proposed location
+    ) {
+      // We want to vary between orcs and trolls, with orcs being much more likely
+      if (Math.random() < 0.8) {
+        console.log(`We'll be putting an orc at (${entityX}, ${entityY})!!!`);
+        dungeon.entities.push(spawnOrc(entityX, entityY));
+      } else {
+        console.log(`We'll be putting an troll at (${entityX}, ${entityY})!!!`);
+        dungeon.entities.push(spawnTroll(entityX, entityY));
+      }
+    }
+  }
+}
+
 export function generateDungeon(
   mapWidth: number,
   mapHeight: number,
   maxRooms: number,
   minSize: number,
   maxSize: number,
+  maxMonsters: number,
   player: Entity,
   display: Display,
 ): GameMap {
-  const dungeon = new GameMap(mapWidth, mapHeight, display);
+  const dungeon = new GameMap(mapWidth, mapHeight, display, [player]);
   const rooms: RectangularRoom[] = [];
 
   for (let count = 0; count < maxRooms; count++) {
@@ -89,6 +149,7 @@ export function generateDungeon(
     }
 
     dungeon.addRoom(x, y, newRoom.tiles);
+    placeEntities(newRoom, dungeon, maxMonsters);
     rooms.push(newRoom);
   }
 
@@ -109,7 +170,7 @@ export function generateDungeon(
 }
 
 function generateRandomNumber(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min) + min);
+  return Math.floor(Math.random() * (max - min + 1) + min); // we add +1 to stay inclusive of our maximum range
 }
 
 function* connectRooms(
