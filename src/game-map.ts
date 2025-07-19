@@ -37,6 +37,16 @@ export class GameMap {
     }
   }
 
+  public get nonPlayerEntities(): Entity[] {
+    return this.entities.filter((entity) => entity.name !== "Player");
+  }
+
+  getBlockingEntityAtLocation(x: number, y: number): Entity | undefined {
+    return this.entities.find(
+      (entity) => entity.blocksMovement && entity.x === x && entity.y === y,
+    );
+  }
+
   isInBounds(x: number, y: number) {
     return 0 <= x && x < this.width && 0 <= y && y < this.height;
   }
@@ -120,13 +130,15 @@ export class GameMap {
     }
 
     this.entities.forEach((entity) => {
-      this.display.draw(
-        entity.x,
-        entity.y,
-        entity.symbol,
-        entity.foreGroundColor,
-        entity.backGroundColor,
-      );
+      if (this.tiles[entity.y][entity.x].isVisible) {
+        this.display.draw(
+          entity.x,
+          entity.y,
+          entity.symbol,
+          entity.foreGroundColor,
+          entity.backGroundColor,
+        );
+      }
     });
   }
 }

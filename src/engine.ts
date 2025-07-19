@@ -49,6 +49,14 @@ export class Engine {
     this.render();
   }
 
+  handleEnemyTurns() {
+    this.gameMap.nonPlayerEntities.forEach((entity) => {
+      console.log(
+        `The ${entity.name} wonders when it will get to take a real turn.`,
+      );
+    });
+  }
+
   update(event: KeyboardEvent) {
     const action = handleInput(event);
 
@@ -57,6 +65,7 @@ export class Engine {
     }
 
     this.display.clear();
+    this.handleEnemyTurns();
     this.gameMap.updateFov(this.player);
     this.render();
   }
