@@ -1,3 +1,7 @@
+// Set debug mode in the configuration.ts
+// May add additional config in the future
+import { debug } from "./configuration";
+
 import { Engine } from "./engine";
 import { spawnPlayer } from "./entity";
 
@@ -19,6 +23,10 @@ declare global {
 
 window.addEventListener("DOMContentLoaded", () => {
   const player = spawnPlayer(Engine.WIDTH / 2, Engine.HEIGHT / 2);
-  console.log(player);
+
+  if (debug) {
+    console.log(`Initial player: ${player}`);
+  }
+
   window.engine = new Engine(player);
 });

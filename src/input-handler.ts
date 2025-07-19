@@ -1,3 +1,7 @@
+// Set debug mode in the configuration.ts
+// May add additional config in the future
+import { debug } from "./configuration";
+
 import { Engine } from "./engine";
 import { Entity } from "./entity";
 
@@ -25,7 +29,11 @@ export class MovementAction extends ActionWithDirection {
     if (!engine.gameMap.isInBounds(destX, destY)) return;
     if (!engine.gameMap.tiles[destY][destX].isWalkable) return;
     if (engine.gameMap.getBlockingEntityAtLocation(destX, destY)) return;
-    // console.log(`moving to ${destX}, ${destY}`);
+
+    if (debug) {
+      console.log(`moving to ${destX}, ${destY}`);
+    }
+
     entity.move(this.dx, this.dy);
   }
 }

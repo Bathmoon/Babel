@@ -1,3 +1,7 @@
+// Set debug mode in the configuration.ts
+// May add additional config in the future
+import { debug } from "./configuration";
+
 import { FLOOR_TILE, WALL_TILE } from "./tile-types";
 import type { Tile } from "./tile-types";
 import { GameMap } from "./game-map";
@@ -88,7 +92,7 @@ function placeEntities(
 
   for (let i = 0; i < monsterCount; i++) {
     const bounds = room.bounds;
-    console.log(bounds);
+
     const entityX = generateRandomNumber(
       bounds.topLeftX + 1,
       bounds.bottomRightX - 1,
@@ -98,8 +102,12 @@ function placeEntities(
       bounds.bottomRightY - 1,
     );
 
-    console.log(entityX);
-    console.log(entityY);
+    if (debug) {
+      console.log("Printing room bounds and entity coordinates");
+      console.log(bounds);
+      console.log(entityX);
+      console.log(entityY);
+    }
 
     if (
       !dungeon.entities.some(
@@ -108,10 +116,16 @@ function placeEntities(
     ) {
       // We want to vary between orcs and trolls, with orcs being much more likely
       if (Math.random() < 0.8) {
-        console.log(`We'll be putting an orc at (${entityX}, ${entityY})!!!`);
+        if (debug) {
+          console.log(`We'll be putting an orc at (${entityX}, ${entityY})`);
+        }
+
         dungeon.entities.push(spawnOrc(entityX, entityY));
       } else {
-        console.log(`We'll be putting an troll at (${entityX}, ${entityY})!!!`);
+        if (debug) {
+          console.log(`We'll be putting a troll at (${entityX}, ${entityY})`);
+        }
+
         dungeon.entities.push(spawnTroll(entityX, entityY));
       }
     }

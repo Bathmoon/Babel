@@ -1,5 +1,9 @@
 import * as ROT from "rot-js";
 
+// Set debug mode in the configuration.ts
+// May add additional config in the future
+import { debug } from "./configuration";
+
 import type { Tile } from "./tile-types";
 import { WALL_TILE } from "./tile-types";
 import { Display } from "rot-js";

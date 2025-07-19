@@ -1,5 +1,9 @@
 import * as ROT from "rot-js";
 
+// Set debug mode in the configuration.ts
+// May add additional config in the future
+import { debug } from "./configuration";
+
 import { handleInput } from "./input-handler";
 import { Entity } from "./entity";
 import { GameMap } from "./game-map";
@@ -51,9 +55,9 @@ export class Engine {
 
   handleEnemyTurns() {
     this.gameMap.nonPlayerEntities.forEach((entity) => {
-      console.log(
-        `The ${entity.name} wonders when it will get to take a real turn.`,
-      );
+      if (debug) {
+        console.log(`The ${entity.name} should take a turn`);
+      }
     });
   }
 
