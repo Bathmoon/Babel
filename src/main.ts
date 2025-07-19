@@ -12,7 +12,7 @@ import { spawnPlayer } from "./entity";
     a. Make sure there's an option to view the whole map, disregarding fov
   2. Split out the generateDungeon function into multiple functions
   3. It feels like something needs to keep track of the list of rooms for a given game map
-  4. Entity generation can place orcs in walls
+  5. Simplify files if possible, single classes, fewer operations and types of operations per file, e.g. no entity and actor in entity.ts
 */
 
 declare global {

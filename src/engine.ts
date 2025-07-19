@@ -58,6 +58,10 @@ export class Engine {
       if (debug) {
         console.log(`The ${entity.name} should take a turn`);
       }
+
+      if (entity.isPlayer) {
+        entity.ai?.perform(entity);
+      }
     });
   }
 
@@ -65,7 +69,7 @@ export class Engine {
     const action = handleInput(event);
 
     if (action) {
-      action.perform(this, this.player);
+      action.perform(this.player);
     }
 
     this.display.clear();
