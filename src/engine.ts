@@ -5,7 +5,7 @@ import * as ROT from "rot-js";
 import { debug } from "./configuration";
 
 import { handleInput } from "./input-handler";
-import { Entity } from "./entity";
+import { Actor } from "./entity";
 import { GameMap } from "./game-map";
 import { generateDungeon } from "./generation";
 
@@ -19,9 +19,9 @@ export class Engine {
   display: ROT.Display;
   gameMap: GameMap;
 
-  player: Entity;
+  player: Actor;
 
-  constructor(player: Entity) {
+  constructor(player: Actor) {
     this.player = player;
 
     this.display = new ROT.Display({
@@ -54,13 +54,13 @@ export class Engine {
   }
 
   handleEnemyTurns() {
-    this.gameMap.nonPlayerEntities.forEach((entity) => {
+    this.gameMap.actors.forEach((actor) => {
       if (debug) {
-        console.log(`The ${entity.name} should take a turn`);
+        console.log(`The ${actor.name} should take a turn`);
       }
 
-      if (entity.isPlayer) {
-        entity.ai?.perform(entity);
+      if (actor.canAct) {
+        actor.ai?.perform(actor);
       }
     });
   }
@@ -68,7 +68,7 @@ export class Engine {
   update(event: KeyboardEvent) {
     const action = handleInput(event);
 
-    if (action) {
+    if (action && this.player.fighter.hp > 0) {
       action.perform(this.player);
     }
 
@@ -79,6 +79,11 @@ export class Engine {
   }
 
   render() {
+    this.display.drawText(
+      1,
+      47, // %c for foreground color, %b for background
+      `HP: %c{red}%b{white}${this.player.fighter.hp}/%c{green}%b{white}${this.player.fighter.maxHp}`,
+    );
     this.gameMap.render();
   }
 }

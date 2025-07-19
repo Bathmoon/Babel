@@ -3,7 +3,7 @@
 import { debug } from "./configuration";
 
 import { Engine } from "./engine";
-import { spawnPlayer } from "./entity";
+import { Actor, spawnPlayer } from "./entity";
 
 /*
   things to keep in mind for refactoring and additions at the end

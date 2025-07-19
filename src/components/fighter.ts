@@ -3,10 +3,10 @@
 import { debug } from "../configuration";
 
 import { type BaseComponent } from "./base-component";
-import { Entity } from "../entity";
+import { Actor, RenderOrder } from "../entity";
 
 export class Fighter implements BaseComponent {
-  entity: Entity | null;
+  entity: Actor | null;
   _hp: number;
   maxHp: number;
   defense: number;
@@ -26,5 +26,29 @@ export class Fighter implements BaseComponent {
 
   public set hp(value: number) {
     this._hp = Math.max(0, Math.min(value, this.maxHp));
+
+    if (this._hp === 0 && this.entity?.canAct) {
+      this.die();
+    }
+  }
+
+  die() {
+    if (!this.entity) return;
+
+    let deathMessage = "";
+    if (window.engine.player === this.entity) {
+      deathMessage = "You died!";
+    } else {
+      deathMessage = `${this.entity.name} is dead!`;
+    }
+
+    this.entity.symbol = "%";
+    this.entity.foreGroundColor = "#bf0000";
+    this.entity.blocksMovement = false;
+    this.entity.renderOrder = RenderOrder.Corpse;
+    this.entity.ai = null;
+    this.entity.name = `Remains of ${this.entity.name}`;
+
+    console.log(deathMessage);
   }
 }

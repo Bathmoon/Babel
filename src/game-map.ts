@@ -7,7 +7,7 @@ import { debug } from "./configuration";
 import type { Tile } from "./tile-types";
 import { WALL_TILE } from "./tile-types";
 import { Display } from "rot-js";
-import { Entity } from "./entity";
+import { Actor, Entity } from "./entity";
 
 export class GameMap {
   width: number;
@@ -43,6 +43,17 @@ export class GameMap {
 
   public get nonPlayerEntities(): Entity[] {
     return this.entities.filter((entity) => entity.name !== "Player");
+  }
+
+  public get actors(): Actor[] {
+    return this.entities
+      .filter((entity) => entity instanceof Actor)
+      .map((entity) => entity as Actor)
+      .filter((actor) => actor.canAct);
+  }
+
+  getActorAtLocation(x: number, y: number): Actor | undefined {
+    return this.actors.find((actor) => actor.x === x && actor.y === y);
   }
 
   getBlockingEntityAtLocation(x: number, y: number): Entity | undefined {
@@ -133,7 +144,11 @@ export class GameMap {
       }
     }
 
-    this.entities.forEach((entity) => {
+    const sortedEntities = this.entities
+      .slice() // copies the array so we don't sort the original
+      .sort((a, b) => a.renderOrder - b.renderOrder);
+
+    sortedEntities.forEach((entity) => {
       if (this.tiles[entity.y][entity.x].isVisible) {
         this.display.draw(
           entity.x,

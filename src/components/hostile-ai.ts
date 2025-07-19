@@ -1,6 +1,6 @@
 import { BaseAI } from "./ai";
 
-import { Entity } from "../entity";
+import { Actor, Entity } from "../entity";
 import { MeleeAction, MovementAction, WaitAction } from "../input-handler";
 
 export class HostileEnemy extends BaseAI {
@@ -16,7 +16,7 @@ export class HostileEnemy extends BaseAI {
 
     if (window.engine.gameMap.tiles[entity.y][entity.x].isVisible) {
       if (distance <= 1) {
-        return new MeleeAction(dx, dy).perform(entity);
+        return new MeleeAction(dx, dy).perform(entity as Actor);
       }
 
       this.calculatePathTo(target.x, target.y, entity);

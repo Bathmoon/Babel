@@ -6,6 +6,12 @@ import { BaseAI } from "./components/ai";
 import { HostileEnemy } from "./components/hostile-ai";
 import { Fighter } from "./components/fighter";
 
+export const RenderOrder = {
+  Corpse: 0,
+  Item: 1,
+  Actor: 2,
+};
+
 export class Entity {
   x: number;
   y: number;
@@ -14,6 +20,7 @@ export class Entity {
   backGroundColor: string;
   name: string;
   blocksMovement: boolean;
+  renderOrder: number;
 
   constructor(
     x: number,
@@ -23,6 +30,7 @@ export class Entity {
     backGroundColor: string = "#000",
     name: string = "<Unnamed>",
     blocksMovement: boolean = false,
+    renderOrder: number = RenderOrder.Corpse,
   ) {
     this.x = x;
     this.y = y;
@@ -31,6 +39,7 @@ export class Entity {
     this.backGroundColor = backGroundColor;
     this.name = name;
     this.blocksMovement = blocksMovement;
+    this.renderOrder = renderOrder;
   }
 
   move(dx: number, dy: number) {
@@ -42,11 +51,10 @@ export class Entity {
 export class Actor extends Entity {
   x: number;
   y: number;
-  char: string;
-  fg: string;
-  bg: string;
+  symbol: string;
+  foreGroundColor: string;
+  backGroundColor: string;
   name: string;
-  blocksMovement: boolean;
   ai: BaseAI | null;
   fighter: Fighter;
 
@@ -54,32 +62,39 @@ export class Actor extends Entity {
     x: number,
     y: number,
     symbol: string,
-    foreGround: string = "#fff",
-    backGround: string = "#000",
+    foreGroundColor: string = "#fff",
+    backGroundColor: string = "#000",
     name: string = "<Unnamed>",
-    blocksMovement: boolean = true,
     ai: BaseAI | null,
     fighter: Fighter,
   ) {
-    super(x, y, symbol, foreGround, backGround, name, blocksMovement);
+    super(
+      x,
+      y,
+      symbol,
+      foreGroundColor,
+      backGroundColor,
+      name,
+      true,
+      RenderOrder.Actor,
+    );
     this.x = x;
     this.y = y;
-    this.char = symbol;
-    this.fg = foreGround;
-    this.bg = backGround;
+    this.symbol = symbol;
+    this.foreGroundColor = foreGroundColor;
+    this.backGroundColor = backGroundColor;
     this.name = name;
-    this.blocksMovement = blocksMovement;
     this.ai = ai;
     this.fighter = fighter;
     this.fighter.entity = this;
   }
 
-  get isPlayer(): boolean {
+  get canAct(): boolean {
     return !!this.ai || window.engine.player === this;
   }
 }
 
-export function spawnPlayer(x: number, y: number): Entity {
+export function spawnPlayer(x: number, y: number): Actor {
   return new Actor(
     x,
     y,
@@ -87,13 +102,12 @@ export function spawnPlayer(x: number, y: number): Entity {
     "#fff",
     "#000",
     "Player",
-    true,
     null,
     new Fighter(30, 2, 5),
   );
 }
 
-export function spawnOrc(x: number, y: number): Entity {
+export function spawnOrc(x: number, y: number): Actor {
   return new Actor(
     x,
     y,
@@ -101,13 +115,12 @@ export function spawnOrc(x: number, y: number): Entity {
     "#3f7f3f",
     "#000",
     "Orc",
-    true,
     new HostileEnemy(),
     new Fighter(10, 0, 3),
   );
 }
 
-export function spawnTroll(x: number, y: number): Entity {
+export function spawnTroll(x: number, y: number): Actor {
   return new Actor(
     x,
     y,
@@ -115,7 +128,6 @@ export function spawnTroll(x: number, y: number): Entity {
     "#007f00",
     "#000",
     "Troll",
-    true,
     new HostileEnemy(),
     new Fighter(16, 1, 4),
   );
