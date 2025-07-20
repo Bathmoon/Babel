@@ -4,6 +4,7 @@ import { debug } from "../configuration";
 
 import { type BaseComponent } from "./base-component";
 import { Actor, RenderOrder } from "../entity";
+import { Colors } from "../ui/colors";
 
 export class Fighter implements BaseComponent {
   entity: Actor | null;
@@ -35,11 +36,16 @@ export class Fighter implements BaseComponent {
   die() {
     if (!this.entity) return;
 
+    const log = window.engine.messageLog;
     let deathMessage = "";
+    let messageColor = null;
+
     if (window.engine.player === this.entity) {
       deathMessage = "You died!";
+      messageColor = Colors.PlayerDie;
     } else {
       deathMessage = `${this.entity.name} is dead!`;
+      messageColor = Colors.EnemyDie;
     }
 
     this.entity.symbol = "%";
@@ -49,6 +55,6 @@ export class Fighter implements BaseComponent {
     this.entity.ai = null;
     this.entity.name = `Remains of ${this.entity.name}`;
 
-    console.log(deathMessage);
+    log.addMessage(deathMessage, messageColor);
   }
 }

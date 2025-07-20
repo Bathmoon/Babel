@@ -29,4 +29,5 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   window.engine = new Engine(player);
+  window.engine.render();
 });
