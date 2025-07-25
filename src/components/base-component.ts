@@ -3,7 +3,16 @@
 import { debug } from "../configuration";
 
 import { Entity } from "../entity";
+import { GameMap } from "../game-map";
 
-export interface BaseComponent {
-  entity: Entity | null;
+export abstract class BaseComponent {
+  parent: Entity | null;
+
+  protected constructor() {
+    this.parent = null;
+  }
+
+  public get gameMap(): GameMap | BaseComponent | null | undefined {
+    return this.parent?.parent;
+  }
 }

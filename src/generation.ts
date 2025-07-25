@@ -6,7 +6,7 @@ import { FLOOR_TILE, WALL_TILE } from "./tile-types";
 import type { Tile } from "./tile-types";
 import { GameMap } from "./game-map";
 import { Display } from "rot-js";
-import { Entity, spawnOrc, spawnTroll } from "./entity";
+import { Entity, spawnHealthPotion, spawnOrc, spawnTroll } from "./entity";
 
 interface Bounds {
   topLeftX: number;
@@ -87,47 +87,43 @@ function placeEntities(
   room: RectangularRoom,
   dungeon: GameMap,
   maxMonsters: number,
+  maxItems: number,
 ) {
-  const monsterCount = generateRandomNumber(0, maxMonsters);
+  const numberOfMonstersToAdd = generateRandomNumber(0, maxMonsters);
+  const numberOfItemsToAdd = generateRandomNumber(0, maxItems);
+  const bounds = room.bounds;
 
-  for (let i = 0; i < monsterCount; i++) {
-    const bounds = room.bounds;
-
-    const entityX = generateRandomNumber(
+  for (let i = 0; i < numberOfMonstersToAdd; i++) {
+    const x = generateRandomNumber(
       bounds.topLeftX + 1,
       bounds.bottomRightX - 1,
     );
-    const entityY = generateRandomNumber(
+    const y = generateRandomNumber(
       bounds.topLeftY + 1,
       bounds.bottomRightY - 1,
     );
 
-    if (debug) {
-      console.log("Printing room bounds and entity coordinates");
-      console.log(bounds);
-      console.log(entityX);
-      console.log(entityY);
-    }
-
-    if (
-      !dungeon.entities.some(
-        (entity) => entity.x == entityX && entity.y == entityY,
-      ) // check if an entity already exists at the proposed location
-    ) {
-      // We want to vary between orcs and trolls, with orcs being much more likely
+    if (!dungeon.entities.some((e) => e.x == x && e.y == y)) {
       if (Math.random() < 0.8) {
-        if (debug) {
-          console.log(`We'll be putting an orc at (${entityX}, ${entityY})`);
-        }
-
-        dungeon.entities.push(spawnOrc(entityX, entityY));
+        spawnOrc(dungeon, x, y);
       } else {
-        if (debug) {
-          console.log(`We'll be putting a troll at (${entityX}, ${entityY})`);
-        }
-
-        dungeon.entities.push(spawnTroll(entityX, entityY));
+        spawnTroll(dungeon, x, y);
       }
+    }
+  }
+
+  for (let i = 0; i < numberOfItemsToAdd; i++) {
+    const x = generateRandomNumber(
+      bounds.topLeftX + 1,
+      bounds.bottomRightX - 1,
+    );
+    const y = generateRandomNumber(
+      bounds.topLeftY + 1,
+      bounds.bottomRightY - 1,
+    );
+
+    if (!dungeon.entities.some((e) => e.x == x && e.y == y)) {
+      spawnHealthPotion(dungeon, x, y);
     }
   }
 }
@@ -139,6 +135,7 @@ export function generateDungeon(
   minSize: number,
   maxSize: number,
   maxMonsters: number,
+  maxItems: number,
   player: Entity,
   display: Display,
 ): GameMap {
@@ -163,7 +160,7 @@ export function generateDungeon(
     }
 
     dungeon.addRoom(x, y, newRoom.tiles);
-    placeEntities(newRoom, dungeon, maxMonsters);
+    placeEntities(newRoom, dungeon, maxMonsters, maxItems);
     rooms.push(newRoom);
   }
 

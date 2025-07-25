@@ -4,12 +4,17 @@ import * as ROT from "rot-js";
 // May add additional config in the future
 import { debug } from "./configuration";
 
-import { handleGameInput, handleLogInput } from "./input-handler";
 import { Actor } from "./entity";
 import { GameMap } from "./game-map";
 import { generateDungeon } from "./generation";
 import { MessageLog } from "./ui/message-log";
 import { Colors } from "./ui/colors";
+
+import {
+  handleGameInput,
+  handleInventoryInput,
+  handleLogInput,
+} from "./input-handler";
 
 import {
   renderHealthBar,
@@ -21,6 +26,8 @@ export const EngineState = {
   Game: 0,
   Dead: 1,
   Log: 2,
+  UseInventory: 3,
+  DropInventory: 4,
 };
 
 export class Engine {
@@ -28,7 +35,11 @@ export class Engine {
   public static readonly HEIGHT = 50;
   public static readonly MAP_WIDTH = 80;
   public static readonly MAP_HEIGHT = 43;
+  public static readonly MAX_ROOMS = 10;
+  public static readonly MIN_SIZE = 5;
+  public static readonly MAX_SIZE = 10;
   public static readonly MAX_MONSTERS_PER_ROOM = 2;
+  public static readonly MAX_ITEMS_PER_ROOM = 2;
 
   display: ROT.Display;
   gameMap: GameMap;
@@ -57,10 +68,11 @@ export class Engine {
     this.gameMap = generateDungeon(
       Engine.MAP_WIDTH,
       Engine.MAP_HEIGHT,
-      10, // max rooms
-      5, // min size
-      20, // max size
+      Engine.MAX_ROOMS,
+      Engine.MIN_SIZE,
+      Engine.MAX_SIZE,
       Engine.MAX_MONSTERS_PER_ROOM,
+      Engine.MAX_ITEMS_PER_ROOM,
       player,
       this.display,
     );
@@ -101,7 +113,9 @@ export class Engine {
       }
 
       if (actor.canAct) {
-        actor.ai?.perform(actor);
+        try {
+          actor.ai?.perform(actor);
+        } catch {}
       }
     });
   }
@@ -110,10 +124,20 @@ export class Engine {
     if (this.state === EngineState.Game) {
       this.updateGameloop(event);
     } else if (this.state === EngineState.Log) {
-      this.updateLogLoop(event);
+      this.updateGameloop(event);
+    } else if (
+      this.state === EngineState.UseInventory ||
+      this.state === EngineState.DropInventory
+    ) {
+      this.updateInventoryLoop(event);
     }
 
     this.render();
+  }
+
+  updateInventoryLoop(event: KeyboardEvent) {
+    const action = handleInventoryInput(event);
+    action?.perform(this.player);
   }
 
   updateGameloop(event: KeyboardEvent) {
@@ -121,11 +145,13 @@ export class Engine {
       const action = handleGameInput(event);
 
       if (action) {
-        action.perform(this.player);
+        try {
+          action.perform(this.player);
 
-        if (this.state === EngineState.Game) {
-          this.handleEnemyTurns();
-        }
+          if (this.state === EngineState.Game) {
+            this.handleEnemyTurns();
+          }
+        } catch {}
       }
     }
 
@@ -177,6 +203,33 @@ export class Engine {
         36,
         this.messageLog.messages.slice(0, this.logCursorPosition + 1),
       );
+    }
+
+    if (this.state === EngineState.UseInventory) {
+      this.renderInventory("Select an item to use");
+    }
+
+    if (this.state === EngineState.DropInventory) {
+      this.renderInventory("Select an item to drop");
+    }
+  }
+
+  renderInventory(title: string) {
+    const itemCount = this.player.inventory.items.length;
+    const height = itemCount + 2 <= 3 ? 3 : itemCount + 2;
+    const width = title.length + 4;
+    const x = this.player.x <= 30 ? 40 : 0;
+    const y = 0;
+
+    renderFrameWithTitle(x, y, width, height, title);
+
+    if (itemCount > 0) {
+      this.player.inventory.items.forEach((i, index) => {
+        const key = String.fromCharCode("a".charCodeAt(0) + index);
+        this.display.drawText(x + 1, y + index + 1, `(${key}) ${i.name}`);
+      });
+    } else {
+      this.display.drawText(x + 1, y + 1, "(Empty)");
     }
   }
 }

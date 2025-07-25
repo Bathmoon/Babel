@@ -6,13 +6,16 @@ import { Engine } from "./engine";
 import { Actor, spawnPlayer } from "./entity";
 
 /*
-  things to keep in mind for refactoring and additions at the end
+  Things to keep in mind for refactoring at the end, prior to net new additions
 
   1. Debug mode
     a. Make sure there's an option to view the whole map, disregarding fov
   2. Split out the generateDungeon function into multiple functions
   3. It feels like something needs to keep track of the list of rooms for a given game map
   5. Simplify files if possible, single classes, fewer operations and types of operations per file, e.g. no entity and actor in entity.ts
+  6. I want entities (and tiles) to know their own coordinates - and ideally have event handlers for mouseover, vs having a global one
+  7. Add a "debug" message log?
+  8. Refactor away from the ridiculous constructors of entity/fighter/etc. Options: simple config object/dto. Composition (entity has list of components)
 */
 
 declare global {

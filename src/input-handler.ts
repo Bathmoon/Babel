@@ -2,7 +2,7 @@
 // May add additional config in the future
 import { debug } from "./configuration";
 
-import { Actor, Entity } from "./entity";
+import { Actor, Entity, Item } from "./entity";
 import { Colors } from "./ui/colors";
 import { EngineState } from "./engine";
 
@@ -31,9 +31,29 @@ export class MovementAction extends ActionWithDirection {
     const destX = entity.x + this.dx;
     const destY = entity.y + this.dy;
 
-    if (!window.engine.gameMap.isInBounds(destX, destY)) return;
-    if (!window.engine.gameMap.tiles[destY][destX].isWalkable) return;
-    if (window.engine.gameMap.getBlockingEntityAtLocation(destX, destY)) return;
+    if (!window.engine.gameMap.isInBounds(destX, destY)) {
+      window.engine.messageLog.addMessage(
+        "That way is blocked.",
+        Colors.Impossible,
+      );
+      throw new Error("That way is blocked.");
+    }
+
+    if (!window.engine.gameMap.tiles[destY][destX].isWalkable) {
+      window.engine.messageLog.addMessage(
+        "That way is blocked.",
+        Colors.Impossible,
+      );
+      throw new Error("That way is blocked.");
+    }
+
+    if (window.engine.gameMap.getBlockingEntityAtLocation(destX, destY)) {
+      window.engine.messageLog.addMessage(
+        "That way is blocked.",
+        Colors.Impossible,
+      );
+      throw new Error("That way is blocked.");
+    }
 
     if (debug) {
       console.log(`moving to ${destX}, ${destY}`);
@@ -50,7 +70,13 @@ export class MeleeAction extends ActionWithDirection {
     const target = window.engine.gameMap.getActorAtLocation(destX, destY);
     const log = window.engine.messageLog;
 
-    if (!target) return;
+    if (!target) {
+      window.engine.messageLog.addMessage(
+        "Nothing to attack",
+        Colors.Impossible,
+      );
+      throw new Error("Nothing to attack.");
+    }
 
     const damage = actor.fighter.power - target.fighter.defense;
     const description = `${actor.name.toUpperCase()} attacks ${target.name}`;
@@ -76,6 +102,79 @@ export class BumpAction extends ActionWithDirection {
     } else {
       return new MovementAction(this.dx, this.dy).perform(entity as Actor);
     }
+  }
+}
+
+export class PickupAction implements Action {
+  perform(entity: Entity) {
+    const consumer = entity as Actor;
+
+    if (!consumer) return;
+
+    const { x, y, inventory } = consumer;
+
+    for (const item of window.engine.gameMap.items) {
+      if (x === item.x && y == item.y) {
+        if (inventory.items.length >= inventory.capacity) {
+          window.engine.messageLog.addMessage(
+            "Your inventory is full.",
+            Colors.Impossible,
+          );
+
+          throw new Error("Your inventory is full.");
+        }
+
+        window.engine.gameMap.removeEntity(item);
+        item.parent = inventory;
+        inventory.items.push(item);
+
+        window.engine.messageLog.addMessage(`You picked up the ${item.name}!`);
+        return;
+      }
+    }
+
+    window.engine.messageLog.addMessage(
+      "There is nothing here to pick up.",
+      Colors.Impossible,
+    );
+
+    throw new Error("There is nothing here to pick up.");
+  }
+}
+
+export class InventoryAction implements Action {
+  isUsing: boolean;
+
+  constructor(isUsing: boolean) {
+    this.isUsing = isUsing;
+  }
+
+  perform(_entity: Entity) {
+    window.engine.state = this.isUsing
+      ? EngineState.UseInventory
+      : EngineState.DropInventory;
+  }
+}
+
+export class ItemAction implements Action {
+  item: Item;
+
+  constructor(item: Item) {
+    this.item = item;
+  }
+
+  perform(entity: Entity) {
+    this.item.consumable.activate(entity);
+  }
+}
+
+class DropItem extends ItemAction {
+  perform(entity: Entity) {
+    const dropper = entity as Actor;
+
+    if (!dropper) return;
+
+    dropper.inventory.drop(this.item);
   }
 }
 
@@ -107,7 +206,6 @@ const MOVE_KEYS: MovementMap = {
   ArrowLeft: new BumpAction(-1, 0),
   ArrowRight: new BumpAction(1, 0),
   Period: new WaitAction(), // wait
-  V: new LogAction(), // change to verbose logging
 
   // Num Pad
   Numpad9: new BumpAction(1, -1), // move diagonally up and to the right
@@ -119,9 +217,44 @@ const MOVE_KEYS: MovementMap = {
   Numpad3: new BumpAction(1, 1), // move diagonally down and to the right
   Numpad6: new BumpAction(1, 0), // move right
   Numpad5: new LogAction(), // testing option
+
+  // UI keys
+  KeyV: new LogAction(),
+  KeyG: new PickupAction(),
+  KeyI: new InventoryAction(true),
+  KeyD: new InventoryAction(false),
 };
 
+export function handleInventoryInput(event: KeyboardEvent): Action | null {
+  let action = null;
+
+  if (event.key.length === 1) {
+    const ordinal = event.key.charCodeAt(0);
+    const index = ordinal - "a".charCodeAt(0);
+
+    if (index >= 0 && index <= 26) {
+      const item = window.engine.player.inventory.items[index];
+
+      if (item) {
+        if (window.engine.state === EngineState.UseInventory) {
+          action = item.consumable.getAction();
+        } else if (window.engine.state === EngineState.DropInventory) {
+          action = new DropItem(item);
+        }
+      } else {
+        window.engine.messageLog.addMessage("Invalid entry.", Colors.Invalid);
+        return null;
+      }
+    }
+  }
+
+  window.engine.state = EngineState.Game;
+
+  return action;
+}
+
 export function handleGameInput(event: KeyboardEvent): Action {
+  console.log("event code is " + event.code);
   return MOVE_KEYS[event.code];
 }
 

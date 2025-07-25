@@ -7,7 +7,7 @@ import { debug } from "./configuration";
 import type { Tile } from "./tile-types";
 import { WALL_TILE } from "./tile-types";
 import { Display } from "rot-js";
-import { Actor, Entity } from "./entity";
+import { Actor, Entity, Item } from "./entity";
 
 export class GameMap {
   width: number;
@@ -41,8 +41,16 @@ export class GameMap {
     }
   }
 
+  public get gameMap(): GameMap {
+    return this;
+  }
+
   public get nonPlayerEntities(): Entity[] {
     return this.entities.filter((entity) => entity.name !== "Player");
+  }
+
+  public get items(): Item[] {
+    return this.entities.filter((e) => e instanceof Item).map((e) => e as Item);
   }
 
   public get actors(): Actor[] {
@@ -64,6 +72,13 @@ export class GameMap {
 
   isInBounds(x: number, y: number) {
     return 0 <= x && x < this.width && 0 <= y && y < this.height;
+  }
+
+  removeEntity(entity: Entity) {
+    const index = this.entities.indexOf(entity);
+    if (index >= 0) {
+      this.entities.splice(index, 1);
+    }
   }
 
   // currentX and currentY are relative to the entire map
