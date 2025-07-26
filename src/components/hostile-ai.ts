@@ -1,7 +1,7 @@
 import { BaseAI } from "./ai";
 
 import { Actor, Entity } from "../entity";
-import { MeleeAction, MovementAction, WaitAction } from "../input-handler";
+import { MeleeAction, MovementAction, WaitAction } from "../actions";
 
 export class HostileEnemy extends BaseAI {
   constructor() {

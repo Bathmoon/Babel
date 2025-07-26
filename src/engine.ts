@@ -11,24 +11,17 @@ import { MessageLog } from "./ui/message-log";
 import { Colors } from "./ui/colors";
 
 import {
-  handleGameInput,
-  handleInventoryInput,
-  handleLogInput,
+  BaseInputHandler,
+  GameInputHandler,
+  InputState,
 } from "./input-handler";
+import { type Action } from "./actions";
 
 import {
   renderHealthBar,
   renderNamesAtLocation,
   renderFrameWithTitle,
 } from "./ui/rendering";
-
-export const EngineState = {
-  Game: 0,
-  Dead: 1,
-  Log: 2,
-  UseInventory: 3,
-  DropInventory: 4,
-};
 
 export class Engine {
   public static readonly WIDTH = 80;
@@ -45,14 +38,12 @@ export class Engine {
   gameMap: GameMap;
   messageLog: MessageLog;
   mousePosition: [number, number];
-
   player: Actor;
-
-  _state: number;
   logCursorPosition: number;
+  inputHandler: BaseInputHandler;
 
   constructor(player: Actor) {
-    this._state = EngineState.Game;
+    this.inputHandler = new GameInputHandler();
     this.logCursorPosition = 0;
     this.player = player;
 
@@ -97,15 +88,6 @@ export class Engine {
     this.gameMap.updateFov(this.player);
   }
 
-  public get state() {
-    return this._state;
-  }
-
-  public set state(state: number) {
-    this._state = state;
-    this.logCursorPosition = this.messageLog.messages.length - 1;
-  }
-
   handleEnemyTurns() {
     this.gameMap.actors.forEach((actor) => {
       if (debug) {
@@ -121,61 +103,17 @@ export class Engine {
   }
 
   update(event: KeyboardEvent) {
-    if (this.state === EngineState.Game) {
-      this.updateGameloop(event);
-    } else if (this.state === EngineState.Log) {
-      this.updateGameloop(event);
-    } else if (
-      this.state === EngineState.UseInventory ||
-      this.state === EngineState.DropInventory
-    ) {
-      this.updateInventoryLoop(event);
-    }
+    const action = this.inputHandler.handleKeyboardInput(event);
+
+    try {
+      action?.perform(this.player);
+      this.handleEnemyTurns();
+      this.gameMap.updateFov(this.player);
+    } catch {}
+
+    this.inputHandler = this.inputHandler.nextHandler;
 
     this.render();
-  }
-
-  updateInventoryLoop(event: KeyboardEvent) {
-    const action = handleInventoryInput(event);
-    action?.perform(this.player);
-  }
-
-  updateGameloop(event: KeyboardEvent) {
-    if (this.player.fighter.hp > 0) {
-      const action = handleGameInput(event);
-
-      if (action) {
-        try {
-          action.perform(this.player);
-
-          if (this.state === EngineState.Game) {
-            this.handleEnemyTurns();
-          }
-        } catch {}
-      }
-    }
-
-    this.gameMap.updateFov(this.player);
-  }
-
-  updateLogLoop(event: KeyboardEvent) {
-    const scrollAmount = handleLogInput(event);
-    if (scrollAmount < 0 && this.logCursorPosition === 0) {
-      this.logCursorPosition = this.messageLog.messages.length - 1;
-    } else if (
-      scrollAmount > 0 &&
-      this.logCursorPosition === this.messageLog.messages.length - 1
-    ) {
-      this.logCursorPosition = 0;
-    } else {
-      this.logCursorPosition = Math.max(
-        0,
-        Math.min(
-          this.logCursorPosition + scrollAmount,
-          this.messageLog.messages.length - 1,
-        ),
-      );
-    }
   }
 
   render() {
@@ -193,7 +131,7 @@ export class Engine {
 
     this.gameMap.render();
 
-    if (this.state === EngineState.Log) {
+    if (this.inputHandler.inputState === InputState.Log) {
       renderFrameWithTitle(3, 3, 74, 38, "Log History");
       this.messageLog.renderMessages(
         this.display,
@@ -205,12 +143,20 @@ export class Engine {
       );
     }
 
-    if (this.state === EngineState.UseInventory) {
+    if (this.inputHandler.inputState === InputState.UseInventory) {
       this.renderInventory("Select an item to use");
     }
 
-    if (this.state === EngineState.DropInventory) {
+    if (this.inputHandler.inputState === InputState.DropInventory) {
       this.renderInventory("Select an item to drop");
+    }
+
+    if (this.inputHandler.inputState === InputState.Target) {
+      const [x, y] = this.mousePosition;
+      const data = this.display._data[`${x},${y}`];
+      const char = data ? data[2] || " " : " ";
+
+      this.display.drawOver(x, y, char[0], "#000", "#fff");
     }
   }
 

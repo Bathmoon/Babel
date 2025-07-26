@@ -1,12 +1,14 @@
-// Set debug mode in the configuration.ts
-// May add additional config in the future
 import { debug } from "./configuration";
 
 import { BaseAI } from "./components/ai";
 import { HostileEnemy } from "./components/hostile-ai";
 import { Fighter } from "./components/fighter";
 import { GameMap } from "./game-map";
-import { type Consumable, HealingConsumable } from "./components/consumable";
+import {
+  type Consumable,
+  HealingConsumable,
+  LightningConsumable,
+} from "./components/consumable";
 import { Inventory } from "./components/inventory";
 import { BaseComponent } from "./components/base-component";
 
@@ -51,6 +53,10 @@ export class Entity {
     if (this.parent && this.parent instanceof GameMap) {
       this.parent.entities.push(this);
     }
+  }
+
+  getDistanceTo(x: number, y: number) {
+    return Math.sqrt((x - this.x) ** 2 + (y - this.y) ** 2);
   }
 
   move(dx: number, dy: number) {
@@ -234,6 +240,19 @@ export function spawnHealthPotion(
     "#000",
     "Health Potion",
     new HealingConsumable(4),
+    gameMap,
+  );
+}
+
+export function spawnLightningScroll(gameMap: GameMap, x: number, y: number) {
+  return new Item(
+    x,
+    y,
+    "~",
+    "#FFFF00",
+    "#000",
+    "Lightning Scroll",
+    new LightningConsumable(20, 5),
     gameMap,
   );
 }

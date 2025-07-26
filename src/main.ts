@@ -16,6 +16,9 @@ import { Actor, spawnPlayer } from "./entity";
   6. I want entities (and tiles) to know their own coordinates - and ideally have event handlers for mouseover, vs having a global one
   7. Add a "debug" message log?
   8. Refactor away from the ridiculous constructors of entity/fighter/etc. Options: simple config object/dto. Composition (entity has list of components)
+    + factory functions? like spawnplayer apparently
+  9. Split out actions into folder/files
+  10. bug: every "look" cursor movement counts as a turn and enemies move and attack
 */
 
 declare global {

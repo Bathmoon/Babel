@@ -4,7 +4,7 @@ import * as ROT from "rot-js";
 // May add additional config in the future
 import { debug } from "../configuration";
 
-import { type Action } from "../input-handler";
+import { type Action } from "../actions";
 import { Entity } from "../entity";
 
 export abstract class BaseAI implements Action {

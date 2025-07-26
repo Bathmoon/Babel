@@ -6,7 +6,13 @@ import { FLOOR_TILE, WALL_TILE } from "./tile-types";
 import type { Tile } from "./tile-types";
 import { GameMap } from "./game-map";
 import { Display } from "rot-js";
-import { Entity, spawnHealthPotion, spawnOrc, spawnTroll } from "./entity";
+import {
+  Entity,
+  spawnHealthPotion,
+  spawnOrc,
+  spawnTroll,
+  spawnLightningScroll,
+} from "./entity";
 
 interface Bounds {
   topLeftX: number;
@@ -123,7 +129,11 @@ function placeEntities(
     );
 
     if (!dungeon.entities.some((e) => e.x == x && e.y == y)) {
-      spawnHealthPotion(dungeon, x, y);
+      if (Math.random() < 0.7) {
+        spawnHealthPotion(dungeon, x, y);
+      } else {
+        spawnLightningScroll(dungeon, x, y);
+      }
     }
   }
 }

@@ -1,21 +1,48 @@
 import { Actor, Entity, Item } from "../entity";
-import { type Action, ItemAction } from "../input-handler";
+import { type Action, ItemAction } from "../actions";
 import { Colors } from "../ui/colors";
 import { Inventory } from "./inventory";
 
-export interface Consumable {
+export abstract class Consumable {
   parent: Item | null;
-  getAction(): Action | null;
-  activate(entity: Entity): void;
+
+  protected constructor(parent: Item | null) {
+    this.parent = parent;
+  }
+
+  abstract activate(entity: Entity): void;
+
+  getAction(): Action | null {
+    if (this.parent) {
+      return new ItemAction(this.parent);
+    }
+
+    return null;
+  }
+
+  consume() {
+    const item = this.parent;
+
+    if (item) {
+      const inventory = item.parent;
+
+      if (inventory instanceof Inventory) {
+        const index = inventory.items.indexOf(item);
+
+        if (index >= 0) {
+          inventory.items.splice(index, 1);
+        }
+      }
+    }
+  }
 }
 
-export class HealingConsumable implements Consumable {
+export class HealingConsumable extends Consumable {
   amount: number;
-  parent: Item | null;
 
   constructor(amount: number, parent: Item | null = null) {
+    super(parent);
     this.amount = amount;
-    this.parent = parent;
   }
 
   getAction(): Action | null {
@@ -63,6 +90,52 @@ export class HealingConsumable implements Consumable {
           inventory.items.splice(index, 1);
         }
       }
+    }
+  }
+}
+
+export class LightningConsumable extends Consumable {
+  damage: number;
+  maxRange: number;
+
+  constructor(damage: number, maxRange: number, parent: Item | null = null) {
+    super(parent);
+
+    this.damage = damage;
+    this.maxRange = maxRange;
+  }
+
+  activate(entity: Entity) {
+    let target: Actor | null = null;
+    let closestDistance = this.maxRange + 1.0;
+
+    for (const actor of window.engine.gameMap.actors) {
+      if (
+        !Object.is(actor, entity) &&
+        window.engine.gameMap.tiles[actor.y][actor.x].isVisible
+      ) {
+        const distance = entity.getDistanceTo(actor.x, actor.y);
+
+        if (distance < closestDistance) {
+          target = actor;
+          closestDistance = distance;
+        }
+      }
+    }
+
+    if (target) {
+      window.engine.messageLog.addMessage(
+        `A lightning bolt strikes the ${target.name} with a loud thunder, for ${this.damage} damage!`,
+      );
+
+      target.fighter.takeDamage(this.damage);
+      this.consume();
+    } else {
+      window.engine.messageLog.addMessage(
+        "No enemy is close enough to strike.",
+      );
+
+      throw new Error("No enemy is close enough to strike.");
     }
   }
 }
