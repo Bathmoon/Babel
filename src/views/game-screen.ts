@@ -65,7 +65,7 @@ export class GameView extends BaseView {
     });
   }
 
-  update(event: KeyboardEvent) {
+  update(event: KeyboardEvent): BaseView {
     const action = this.inputHandler.handleKeyboardInput(event);
 
     if (
@@ -89,6 +89,7 @@ export class GameView extends BaseView {
     this.inputHandler = this.inputHandler.nextHandler;
 
     this.render();
+    return this;
   }
 
   render() {

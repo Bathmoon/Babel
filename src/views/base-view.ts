@@ -12,7 +12,7 @@ export abstract class BaseView {
     this.player = player;
   }
 
-  abstract update(event: KeyboardEvent): void;
+  abstract update(event: KeyboardEvent): BaseView;
 
   abstract render(): void;
 }

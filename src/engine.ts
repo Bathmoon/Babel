@@ -4,6 +4,7 @@ import { BaseInputHandler, GameInputHandler } from "./input-handler";
 import { Actor, spawnPlayer } from "./entity";
 import { BaseView } from "./views/base-view";
 import { GameView } from "./views/game-screen";
+import { MainMenuView } from "./views/main-menu-view";
 
 export class Engine {
   public static readonly WIDTH = 80;
@@ -44,10 +45,15 @@ export class Engine {
       this.view.render();
     });
 
-    this.view = new GameView(this.display, this.player);
+    this.view = new MainMenuView(this.display, this.player);
   }
 
   update(event: KeyboardEvent) {
     const view = this.view.update(event);
+
+    if (!Object.is(view, this.view)) {
+      this.view = view;
+      this.view.render();
+    }
   }
 }
