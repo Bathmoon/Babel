@@ -18,7 +18,7 @@ import { Actor, spawnPlayer } from "./entity";
   8. Refactor away from the ridiculous constructors of entity/fighter/etc. Options: simple config object/dto. Composition (entity has list of components)
     + factory functions? like spawnplayer apparently
   9. Split out actions into folder/files
-  10. bug: every "look" cursor movement counts as a turn and enemies move and attack
+  10. Import json files as consumables etc instead of hardcoding classes for everything all over the place?
 */
 
 declare global {

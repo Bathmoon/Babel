@@ -1,6 +1,7 @@
 import { debug } from "./configuration";
 
 import { Actor, Entity, Item } from "./entity";
+import { ImpossibleException } from "./exceptions";
 import { Colors } from "./ui/colors";
 
 export abstract class Action {
@@ -29,27 +30,15 @@ export class MovementAction extends ActionWithDirection {
     const destY = entity.y + this.dy;
 
     if (!window.engine.gameMap.isInBounds(destX, destY)) {
-      window.engine.messageLog.addMessage(
-        "That way is blocked.",
-        Colors.Impossible,
-      );
-      throw new Error("That way is blocked.");
+      throw new ImpossibleException("That way is blocked.");
     }
 
     if (!window.engine.gameMap.tiles[destY][destX].isWalkable) {
-      window.engine.messageLog.addMessage(
-        "That way is blocked.",
-        Colors.Impossible,
-      );
-      throw new Error("That way is blocked.");
+      throw new ImpossibleException("That way is blocked.");
     }
 
     if (window.engine.gameMap.getBlockingEntityAtLocation(destX, destY)) {
-      window.engine.messageLog.addMessage(
-        "That way is blocked.",
-        Colors.Impossible,
-      );
-      throw new Error("That way is blocked.");
+      throw new ImpossibleException("That way is blocked.");
     }
 
     if (debug) {
@@ -68,11 +57,7 @@ export class MeleeAction extends ActionWithDirection {
     const log = window.engine.messageLog;
 
     if (!target) {
-      window.engine.messageLog.addMessage(
-        "Nothing to attack",
-        Colors.Impossible,
-      );
-      throw new Error("Nothing to attack.");
+      throw new ImpossibleException("Nothing to attack.");
     }
 
     const damage = actor.fighter.power - target.fighter.defense;
@@ -113,12 +98,7 @@ export class PickupAction implements Action {
     for (const item of window.engine.gameMap.items) {
       if (x === item.x && y == item.y) {
         if (inventory.items.length >= inventory.capacity) {
-          window.engine.messageLog.addMessage(
-            "Your inventory is full.",
-            Colors.Impossible,
-          );
-
-          throw new Error("Your inventory is full.");
+          throw new ImpossibleException("Your inventory is full.");
         }
 
         window.engine.gameMap.removeEntity(item);
@@ -130,26 +110,35 @@ export class PickupAction implements Action {
       }
     }
 
-    window.engine.messageLog.addMessage(
-      "There is nothing here to pick up.",
-      Colors.Impossible,
-    );
-
-    throw new Error("There is nothing here to pick up.");
+    throw new ImpossibleException("There is nothing here to pick up.");
   }
 }
 
 export class ItemAction extends Action {
-  item: Item;
+  item: Item | null;
+  targetPosition: [number, number] | null;
 
-  constructor(item: Item) {
+  constructor(
+    item: Item | null,
+    targetPosition: [number, number] | null = null,
+  ) {
     super();
 
+    this.targetPosition = targetPosition;
     this.item = item;
   }
 
+  public get targetActor(): Actor | undefined {
+    if (!this.targetPosition) {
+      return;
+    }
+
+    const [x, y] = this.targetPosition;
+    return window.engine.gameMap.getActorAtLocation(x, y);
+  }
+
   perform(entity: Entity) {
-    this.item.consumable.activate(entity);
+    this.item?.consumable.activate(this, entity);
   }
 }
 
@@ -157,7 +146,7 @@ export class DropItem extends ItemAction {
   perform(entity: Entity) {
     const dropper = entity as Actor;
 
-    if (!dropper) return;
+    if (!dropper || !this.item) return;
 
     dropper.inventory.drop(this.item);
   }

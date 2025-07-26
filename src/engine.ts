@@ -9,13 +9,14 @@ import { GameMap } from "./game-map";
 import { generateDungeon } from "./generation";
 import { MessageLog } from "./ui/message-log";
 import { Colors } from "./ui/colors";
+import { ImpossibleException } from "./exceptions";
 
 import {
   BaseInputHandler,
   GameInputHandler,
   InputState,
 } from "./input-handler";
-import { type Action } from "./actions";
+import { Action, BumpAction, ItemAction, WaitAction } from "./actions";
 
 import {
   renderHealthBar,
@@ -107,12 +108,23 @@ export class Engine {
 
     try {
       action?.perform(this.player);
-      this.handleEnemyTurns();
+
+      if (
+        action instanceof BumpAction ||
+        action instanceof WaitAction ||
+        action instanceof ItemAction
+      ) {
+        this.handleEnemyTurns();
+      }
+
       this.gameMap.updateFov(this.player);
-    } catch {}
+    } catch (error) {
+      if (error instanceof ImpossibleException) {
+        this.messageLog.addMessage(error.message, Colors.Impossible);
+      }
+    }
 
     this.inputHandler = this.inputHandler.nextHandler;
-
     this.render();
   }
 
@@ -158,6 +170,8 @@ export class Engine {
 
       this.display.drawOver(x, y, char[0], "#000", "#fff");
     }
+
+    this.inputHandler.onRender(this.display);
   }
 
   renderInventory(title: string) {

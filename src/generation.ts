@@ -11,7 +11,9 @@ import {
   spawnHealthPotion,
   spawnOrc,
   spawnTroll,
+  spawnConfusionScroll,
   spawnLightningScroll,
+  spawnFireballScroll,
 } from "./entity";
 
 interface Bounds {
@@ -129,8 +131,14 @@ function placeEntities(
     );
 
     if (!dungeon.entities.some((e) => e.x == x && e.y == y)) {
-      if (Math.random() < 0.7) {
+      const itemChance = Math.random();
+
+      if (itemChance < 0.7) {
         spawnHealthPotion(dungeon, x, y);
+      } else if (itemChance < 0.8) {
+        spawnFireballScroll(dungeon, x, y);
+      } else if (itemChance < 0.9) {
+        spawnConfusionScroll(dungeon, x, y);
       } else {
         spawnLightningScroll(dungeon, x, y);
       }
@@ -190,7 +198,7 @@ export function generateDungeon(
   return dungeon;
 }
 
-function generateRandomNumber(min: number, max: number) {
+export function generateRandomNumber(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 

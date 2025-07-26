@@ -8,6 +8,7 @@ import {
 } from "./actions";
 import { Colors } from "./ui/colors";
 import { Engine } from "./engine";
+import { Display } from "rot-js";
 
 export const InputState = {
   Game: 1,
@@ -73,6 +74,7 @@ export abstract class BaseInputHandler {
   }
 
   abstract handleKeyboardInput(event: KeyboardEvent): Action | null;
+  onRender(_display: Display) {}
 }
 
 export class GameInputHandler extends BaseInputHandler {
@@ -214,14 +216,16 @@ export abstract class SelectIndexHandler extends BaseInputHandler {
 
       return null;
     } else if (event.key === "Enter") {
-      return this.onIndexSelected();
+      let [x, y] = window.engine.mousePosition;
+
+      return this.onIndexSelected(x, y);
     }
 
     this.nextHandler = new GameInputHandler();
     return null;
   }
 
-  abstract onIndexSelected(): Action | null;
+  abstract onIndexSelected(x: number, y: number): Action | null;
 }
 
 export class LookHandler extends SelectIndexHandler {
@@ -229,8 +233,56 @@ export class LookHandler extends SelectIndexHandler {
     super();
   }
 
-  onIndexSelected(): Action | null {
+  onIndexSelected(_x: number, _y: number): Action | null {
     this.nextHandler = new GameInputHandler();
     return null;
+  }
+}
+
+type ActionCallback = (x: number, y: number) => Action | null;
+
+export class SingleRangedAttackHandler extends SelectIndexHandler {
+  callback: ActionCallback;
+
+  constructor(callback: ActionCallback) {
+    super();
+
+    this.callback = callback;
+  }
+
+  onIndexSelected(x: number, y: number): Action | null {
+    this.nextHandler = new GameInputHandler();
+    return this.callback(x, y);
+  }
+}
+
+export class AreaRangedAttackHandler extends SelectIndexHandler {
+  radius: number;
+  callback: ActionCallback;
+
+  constructor(radius: number, callback: ActionCallback) {
+    super();
+
+    this.radius = radius;
+    this.callback = callback;
+  }
+
+  onRender(display: Display) {
+    const startX = window.engine.mousePosition[0] - this.radius - 1;
+    const startY = window.engine.mousePosition[1] - this.radius - 1;
+
+    for (let x = startX; x < startX + this.radius ** 2; x++) {
+      for (let y = startY; y < startY + this.radius ** 2; y++) {
+        const data = display._data[`${x},${y}`];
+        const char = data ? data[2] || " " : " ";
+
+        display.drawOver(x, y, char[0], "#fff", "#f00");
+      }
+    }
+  }
+
+  onIndexSelected(x: number, y: number): Action | null {
+    this.nextHandler = new GameInputHandler();
+    return this.callback(x, y);
   }
 }

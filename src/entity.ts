@@ -1,16 +1,18 @@
 import { debug } from "./configuration";
 
-import { BaseAI } from "./components/ai";
-import { HostileEnemy } from "./components/hostile-ai";
+import { BaseAI } from "./components/ai/ai";
+import { HostileEnemy } from "./components/ai/hostile-ai";
 import { Fighter } from "./components/fighter";
 import { GameMap } from "./game-map";
 import {
   type Consumable,
   HealingConsumable,
   LightningConsumable,
+  FireballDamageConsumable,
 } from "./components/consumable";
 import { Inventory } from "./components/inventory";
 import { BaseComponent } from "./components/base-component";
+import { ConfusionConsumable } from "./components/consumable";
 
 export const RenderOrder = {
   Corpse: 0,
@@ -253,6 +255,32 @@ export function spawnLightningScroll(gameMap: GameMap, x: number, y: number) {
     "#000",
     "Lightning Scroll",
     new LightningConsumable(20, 5),
+    gameMap,
+  );
+}
+
+export function spawnConfusionScroll(gameMap: GameMap, x: number, y: number) {
+  return new Item(
+    x,
+    y,
+    "~",
+    "#cf3fff",
+    "#000",
+    "Confusion Scroll",
+    new ConfusionConsumable(10),
+    gameMap,
+  );
+}
+
+export function spawnFireballScroll(gameMap: GameMap, x: number, y: number) {
+  return new Item(
+    x,
+    y,
+    "~",
+    "#ff0000",
+    "#000",
+    "Fireball Scroll",
+    new FireballDamageConsumable(12, 3),
     gameMap,
   );
 }
