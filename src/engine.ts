@@ -3,7 +3,6 @@ import * as ROT from "rot-js";
 import { BaseInputHandler, GameInputHandler } from "./input-handler";
 import { Actor, spawnPlayer } from "./entity";
 import { BaseView } from "./views/base-view";
-import { GameView } from "./views/game-screen";
 import { MainMenuView } from "./views/main-menu-view";
 
 export class Engine {
