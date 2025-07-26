@@ -1,7 +1,4 @@
 // Set debug mode in the configuration.ts
-// May add additional config in the future
-import { debug } from "./configuration";
-
 export interface Graphic {
   symbol: string;
   foreGroundColor: string;

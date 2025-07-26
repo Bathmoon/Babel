@@ -67,14 +67,22 @@ const MOVE_KEYS: DirectionMap = {
 export abstract class BaseInputHandler {
   nextHandler: BaseInputHandler;
   inputState: number;
+  logCursorPosition: number;
+  mousePosition: [number, number];
 
   protected constructor(inputState: number = InputState.Game) {
     this.nextHandler = this;
     this.inputState = inputState;
+    this.mousePosition = [0, 0];
+    this.logCursorPosition = window.messageLog.messages.length - 1;
   }
 
   abstract handleKeyboardInput(event: KeyboardEvent): Action | null;
   onRender(_display: Display) {}
+
+  handleMouseMovement(position: [number, number]): void {
+    this.mousePosition = position;
+  }
 }
 
 export class GameInputHandler extends BaseInputHandler {
@@ -120,13 +128,11 @@ export class LogInputHandler extends BaseInputHandler {
 
   handleKeyboardInput(event: KeyboardEvent): Action | null {
     if (event.key === "Home") {
-      return new LogAction(() => (window.engine.logCursorPosition = 0));
+      return new LogAction(() => (this.logCursorPosition = 0));
     }
     if (event.key === "End") {
       return new LogAction(
-        () =>
-          (window.engine.logCursorPosition =
-            window.engine.messageLog.messages.length - 1),
+        () => (this.logCursorPosition = window.messageLog.messages.length - 1),
       );
     }
 
@@ -137,21 +143,19 @@ export class LogInputHandler extends BaseInputHandler {
     }
 
     return new LogAction(() => {
-      if (scrollAmount < 0 && window.engine.logCursorPosition === 0) {
-        window.engine.logCursorPosition =
-          window.engine.messageLog.messages.length - 1;
+      if (scrollAmount < 0 && this.logCursorPosition === 0) {
+        this.logCursorPosition = window.messageLog.messages.length - 1;
       } else if (
         scrollAmount > 0 &&
-        window.engine.logCursorPosition ===
-          window.engine.messageLog.messages.length - 1
+        this.logCursorPosition === window.messageLog.messages.length - 1
       ) {
-        window.engine.logCursorPosition = 0;
+        this.logCursorPosition = 0;
       } else {
-        window.engine.logCursorPosition = Math.max(
+        this.logCursorPosition = Math.max(
           0,
           Math.min(
-            window.engine.logCursorPosition + scrollAmount,
-            window.engine.messageLog.messages.length - 1,
+            this.logCursorPosition + scrollAmount,
+            window.messageLog.messages.length - 1,
           ),
         );
       }
@@ -179,7 +183,7 @@ export class InventoryInputHandler extends BaseInputHandler {
             return new DropItem(item);
           }
         } else {
-          window.engine.messageLog.addMessage("Invalid entry.", Colors.Invalid);
+          window.messageLog.addMessage("Invalid entry.", Colors.Invalid);
           return null;
         }
       }
@@ -194,7 +198,7 @@ export abstract class SelectIndexHandler extends BaseInputHandler {
     super(InputState.Target);
 
     const { x, y } = window.engine.player;
-    window.engine.mousePosition = [x, y];
+    this.mousePosition = [x, y];
   }
 
   handleKeyboardInput(event: KeyboardEvent): Action | null {
@@ -205,18 +209,18 @@ export abstract class SelectIndexHandler extends BaseInputHandler {
       if (event.ctrlKey) modifier = 10;
       if (event.altKey) modifier = 20;
 
-      let [x, y] = window.engine.mousePosition;
+      let [x, y] = this.mousePosition;
       const [dx, dy] = moveAmount;
 
       x += dx * modifier;
       y += dy * modifier;
       x = Math.max(0, Math.min(x, Engine.MAP_WIDTH - 1));
       y = Math.max(0, Math.min(y, Engine.MAP_HEIGHT - 1));
-      window.engine.mousePosition = [x, y];
+      this.mousePosition = [x, y];
 
       return null;
     } else if (event.key === "Enter") {
-      let [x, y] = window.engine.mousePosition;
+      let [x, y] = this.mousePosition;
 
       return this.onIndexSelected(x, y);
     }
@@ -268,15 +272,12 @@ export class AreaRangedAttackHandler extends SelectIndexHandler {
   }
 
   onRender(display: Display) {
-    const startX = window.engine.mousePosition[0] - this.radius - 1;
-    const startY = window.engine.mousePosition[1] - this.radius - 1;
+    const startX = this.mousePosition[0] - this.radius - 1;
+    const startY = this.mousePosition[1] - this.radius - 1;
 
     for (let x = startX; x < startX + this.radius ** 2; x++) {
       for (let y = startY; y < startY + this.radius ** 2; y++) {
-        const data = display._data[`${x},${y}`];
-        const char = data ? data[2] || " " : " ";
-
-        display.drawOver(x, y, char[0], "#fff", "#f00");
+        display.drawOver(x, y, null, "#fff", "#f00");
       }
     }
   }

@@ -1,7 +1,3 @@
-// Set debug mode in the configuration.ts
-// May add additional config in the future
-import { debug } from "../configuration";
-
 import { Entity } from "../entity";
 import { GameMap } from "../game-map";
 

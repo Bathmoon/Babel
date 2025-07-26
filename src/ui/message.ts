@@ -1,7 +1,3 @@
-import { Display } from "rot-js";
-
-import { Colors } from "./colors";
-
 export class Message {
   count: number;
   plainText: string;

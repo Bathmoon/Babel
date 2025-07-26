@@ -1,7 +1,4 @@
 // Set debug mode in the configuration.ts
-// May add additional config in the future
-import { debug } from "./configuration";
-
 import { FLOOR_TILE, WALL_TILE } from "./tile-types";
 import type { Tile } from "./tile-types";
 import { GameMap } from "./game-map";

@@ -3,6 +3,7 @@ import { Entity } from "../../entity";
 import { Actor } from "../../entity";
 import { generateRandomNumber } from "../../generation";
 import { BumpAction } from "../../actions";
+import { GameMap } from "../../game-map";
 
 export class ConfusedEnemy extends BaseAI {
   previousAi: BaseAI | null;
@@ -15,15 +16,13 @@ export class ConfusedEnemy extends BaseAI {
     this.turnsRemaining = turnsRemaining;
   }
 
-  perform(entity: Entity) {
+  perform(entity: Entity, gameMap: GameMap) {
     const actor = entity as Actor;
 
     if (!actor) return;
 
     if (this.turnsRemaining <= 0) {
-      window.engine.messageLog.addMessage(
-        `The ${entity.name} is no longer confused.`,
-      );
+      window.messageLog.addMessage(`The ${entity.name} is no longer confused.`);
 
       actor.ai = this.previousAi;
     } else {
@@ -32,7 +31,7 @@ export class ConfusedEnemy extends BaseAI {
       const action = new BumpAction(directionX, directionY);
 
       this.turnsRemaining -= 1;
-      action.perform(entity);
+      action.perform(entity, gameMap);
     }
   }
 }

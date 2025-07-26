@@ -1,9 +1,7 @@
-// Set debug mode in the configuration.ts
-// May add additional config in the future
-import { debug } from "./configuration";
-
 import { Engine } from "./engine";
-import { Actor, spawnPlayer } from "./entity";
+import { MessageLog } from "./ui/message-log";
+import { Colors } from "./ui/colors";
+import { spawnPlayer } from "./entity";
 
 /*
   Things to keep in mind for refactoring at the end, prior to net new additions
@@ -24,16 +22,20 @@ import { Actor, spawnPlayer } from "./entity";
 declare global {
   interface Window {
     engine: Engine;
+    messageLog: MessageLog;
+    debug: boolean;
   }
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  const player = spawnPlayer(Engine.WIDTH / 2, Engine.HEIGHT / 2);
+  window.debug = false;
+  window.messageLog = new MessageLog();
+  window.engine = new Engine();
 
-  if (debug) {
-    console.log(`Initial player: ${player}`);
-  }
+  window.messageLog.addMessage(
+    "Hello and welcome, adventurer, to yet another dungeon!",
+    Colors.WelcomeText,
+  );
 
-  window.engine = new Engine(player);
-  window.engine.render();
+  window.engine.view.render();
 });

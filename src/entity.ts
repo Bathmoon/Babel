@@ -1,5 +1,3 @@
-import { debug } from "./configuration";
-
 import { BaseAI } from "./components/ai/ai";
 import { HostileEnemy } from "./components/ai/hostile-ai";
 import { Fighter } from "./components/fighter";

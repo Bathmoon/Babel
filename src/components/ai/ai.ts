@@ -1,19 +1,10 @@
 import * as ROT from "rot-js";
 
-// Set debug mode in the configuration.ts
-// May add additional config in the future
-import { debug } from "../../configuration";
-
-import {
-  Action,
-  BumpAction,
-  MeleeAction,
-  MovementAction,
-  WaitAction,
-} from "../../actions";
+import { Action, BumpAction } from "../../actions";
 import { generateRandomNumber } from "../../generation";
 import { Entity } from "../../entity";
 import { Actor } from "../../entity";
+import { GameMap } from "../../game-map";
 
 export abstract class BaseAI implements Action {
   path: [number, number][];
@@ -22,7 +13,7 @@ export abstract class BaseAI implements Action {
     this.path = [];
   }
 
-  abstract perform(_entity: Entity): void;
+  abstract perform(_entity: Entity, _gameMap: GameMap): void;
 
   /**
    * Compute and return a path to the target position.
@@ -33,9 +24,13 @@ export abstract class BaseAI implements Action {
    * @param destY
    * @param entity
    */
-  calculatePathTo(destX: number, destY: number, entity: Entity) {
-    const isPassable = (x: number, y: number) =>
-      window.engine.gameMap.tiles[y][x].isWalkable;
+  calculatePathTo(
+    destX: number,
+    destY: number,
+    entity: Entity,
+    gameMap: GameMap,
+  ) {
+    const isPassable = (x: number, y: number) => gameMap.tiles[y][x].isWalkable;
     const dijkstra = new ROT.Path.Dijkstra(destX, destY, isPassable, {});
 
     this.path = [];
@@ -57,36 +52,3 @@ export const directions: [number, number][] = [
   [0, 1], // South
   [1, 1], // Southeast
 ];
-
-export class ConfusedEnemy extends BaseAI {
-  previousAi: BaseAI | null;
-  turnsRemaining: number;
-
-  constructor(previousAi: BaseAI | null, turnsRemaining: number) {
-    super();
-
-    this.previousAi = previousAi;
-    this.turnsRemaining = turnsRemaining;
-  }
-
-  perform(entity: Entity) {
-    const actor = entity as Actor;
-
-    if (!actor) return;
-
-    if (this.turnsRemaining <= 0) {
-      window.engine.messageLog.addMessage(
-        `The ${entity.name} is no longer confused.`,
-      );
-
-      actor.ai = this.previousAi;
-    } else {
-      const [directionX, directionY] =
-        directions[generateRandomNumber(0, directions.length)];
-      const action = new BumpAction(directionX, directionY);
-
-      this.turnsRemaining -= 1;
-      action.perform(entity);
-    }
-  }
-}

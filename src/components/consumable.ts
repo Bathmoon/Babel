@@ -8,6 +8,7 @@ import {
 } from "../input-handler";
 import { ConfusedEnemy } from "./ai/confused-ai";
 import { ImpossibleException } from "../exceptions";
+import { GameMap } from "../game-map";
 
 export abstract class Consumable {
   parent: Item | null;
@@ -16,7 +17,7 @@ export abstract class Consumable {
     this.parent = parent;
   }
 
-  abstract activate(action: ItemAction, entity: Entity): void;
+  abstract activate(action: ItemAction, entity: Entity, gameMap: GameMap): void;
 
   getAction(): Action | null {
     if (this.parent) {
@@ -67,7 +68,7 @@ export class HealingConsumable extends Consumable {
     const amountRecovered = consumer.fighter.heal(this.amount);
 
     if (amountRecovered > 0) {
-      window.engine.messageLog.addMessage(
+      window.messageLog.addMessage(
         `You consume the ${this.parent?.name}, and recover ${amountRecovered} HP!`,
         Colors.HealthRecovered,
       );
@@ -106,14 +107,14 @@ export class LightningConsumable extends Consumable {
     this.maxRange = maxRange;
   }
 
-  activate(_action: ItemAction, entity: Entity) {
+  activate(_action: ItemAction, entity: Entity, gameMap: GameMap) {
     let target: Actor | null = null;
     let closestDistance = this.maxRange + 1.0;
 
-    for (const actor of window.engine.gameMap.actors) {
+    for (const actor of gameMap.actors) {
       if (
         !Object.is(actor, entity) &&
-        window.engine.gameMap.tiles[actor.y][actor.x].isVisible
+        gameMap.tiles[actor.y][actor.x].isVisible
       ) {
         const distance = entity.getDistanceTo(actor.x, actor.y);
 
@@ -125,7 +126,7 @@ export class LightningConsumable extends Consumable {
     }
 
     if (target) {
-      window.engine.messageLog.addMessage(
+      window.messageLog.addMessage(
         `A lightning bolt strikes the ${target.name} with a loud thunder, for ${this.damage} damage!`,
       );
 
@@ -149,26 +150,26 @@ export class ConfusionConsumable extends Consumable {
   }
 
   getAction(): Action | null {
-    window.engine.messageLog.addMessage(
+    window.messageLog.addMessage(
       "Select a target location.",
       Colors.NeedsTarget,
     );
 
-    window.engine.inputHandler = new SingleRangedAttackHandler((x, y) => {
+    window.engine.view.inputHandler = new SingleRangedAttackHandler((x, y) => {
       return new ItemAction(this.parent, [x, y]);
     });
 
     return null;
   }
 
-  activate(action: ItemAction, entity: Entity) {
-    const target = action.targetActor;
+  activate(action: ItemAction, entity: Entity, gameMap: GameMap) {
+    const target = action.targetActor(gameMap);
 
     if (!target) {
       throw new ImpossibleException("You must select an enemy to target.");
     }
 
-    if (!window.engine.gameMap.tiles[target.y][target.x].isVisible) {
+    if (!gameMap.tiles[target.y][target.x].isVisible) {
       throw new ImpossibleException(
         "You cannot target an area you cannot see.",
       );
@@ -178,7 +179,7 @@ export class ConfusionConsumable extends Consumable {
       throw new ImpossibleException("You cannot confuse yourself!");
     }
 
-    window.engine.messageLog.addMessage(
+    window.messageLog.addMessage(
       `The eyes of the ${target.name} look vacant, as it starts to stumble around!`,
       Colors.StatusEffectApplied,
     );
@@ -200,12 +201,12 @@ export class FireballDamageConsumable extends Consumable {
   }
 
   getAction(): Action | null {
-    window.engine.messageLog.addMessage(
+    window.messageLog.addMessage(
       "Select a target location.",
       Colors.NeedsTarget,
     );
 
-    window.engine.inputHandler = new AreaRangedAttackHandler(
+    window.engine.view.inputHandler = new AreaRangedAttackHandler(
       this.radius,
       (x, y) => {
         return new ItemAction(this.parent, [x, y]);
@@ -215,7 +216,7 @@ export class FireballDamageConsumable extends Consumable {
     return null;
   }
 
-  activate(action: ItemAction, _entity: Entity) {
+  activate(action: ItemAction, _entity: Entity, gameMap: GameMap) {
     const { targetPosition } = action;
     let targetsHit = false;
 
@@ -225,15 +226,15 @@ export class FireballDamageConsumable extends Consumable {
 
     const [x, y] = targetPosition;
 
-    if (!window.engine.gameMap.tiles[y][x].isVisible) {
+    if (!gameMap.tiles[y][x].isVisible) {
       throw new ImpossibleException(
         "You cannot target an area that you cannot see.",
       );
     }
 
-    for (let actor of window.engine.gameMap.actors) {
+    for (let actor of gameMap.actors) {
       if (actor.getDistanceTo(x, y) <= this.radius) {
-        window.engine.messageLog.addMessage(
+        window.messageLog.addMessage(
           `The ${actor.name} is engulfed in a fiery explosion, taking ${this.damage} damage!`,
         );
 

@@ -1,7 +1,4 @@
 // Set debug mode in the configuration.ts
-// May add additional config in the future
-import { debug } from "../configuration";
-
 import { BaseComponent } from "./base-component";
 import { Actor, RenderOrder } from "../entity";
 import { Colors } from "../ui/colors";
@@ -51,7 +48,7 @@ export class Fighter extends BaseComponent {
   die() {
     if (!this.parent) return;
 
-    const log = window.engine.messageLog;
+    const log = window.messageLog;
     let deathMessage = "";
     let messageColor = null;
 
