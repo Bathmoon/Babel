@@ -1,0 +1,19 @@
+{
+  "isWalkable": true,
+  "isTransparent": true,
+  "isVisible": false,
+  "isSeen": false,
+  "isOccupied": false,
+  "plane": 0,
+  "heightRange": [1],
+  "dark": {
+    "symbol": " ",
+    "foreGroundColor": "#fff",
+    "backGroundColor": "#323296"
+  },
+  "light": {
+    "symbol": " ",
+    "foreGroundColor": "#fff",
+    "backGroundColor": "#c8b432"
+  }
+}

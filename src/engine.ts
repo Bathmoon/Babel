@@ -10,6 +10,9 @@ export class Engine {
   public static readonly HEIGHT = 50;
   public static readonly MAP_WIDTH = 80;
   public static readonly MAP_HEIGHT = 45;
+  public static readonly MIN_ROOM_SIZE = 6;
+  public static readonly MAX_ROOM_SIZE = 10;
+  public static readonly MAX_ROOMS = 30;
 
   display: ROT.Display;
   gameMap: GameMap;
@@ -26,20 +29,18 @@ export class Engine {
       height: Engine.HEIGHT,
       forceSquareRatio: true,
     });
+    const container = this.display.getContainer()!;
+    document.body.appendChild(container);
 
     this.gameMap = generateDungeon(
       Engine.MAP_WIDTH,
       Engine.MAP_HEIGHT,
-      10,
-      5,
-      20,
+      Engine.MAX_ROOMS,
+      Engine.MIN_ROOM_SIZE,
+      Engine.MAX_ROOM_SIZE,
       player,
       this.display,
     );
-
-    const container = this.display.getContainer()!;
-
-    document.body.appendChild(container);
 
     window.addEventListener("keydown", (event) => {
       this.update(event);
@@ -49,25 +50,24 @@ export class Engine {
   }
 
   update(event: KeyboardEvent) {
+    this.display.clear();
     const action = handleInput(event);
 
     if (action) {
       action.perform(this, this.player);
     }
-
-    this.display.clear();
     this.render();
   }
 
   render() {
     this.gameMap.render();
-    this.entities.forEach((entity) => {
+    this.entities.forEach((e) => {
       this.display.draw(
-        entity.x,
-        entity.y,
-        entity.symbol,
-        entity.foreGroundColor,
-        entity.backGroundColor,
+        e.x,
+        e.y,
+        e.symbol,
+        e.foreGroundColor,
+        e.backGroundColor,
       );
     });
   }

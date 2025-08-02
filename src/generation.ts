@@ -1,5 +1,5 @@
-import { FLOOR_TILE, WALL_TILE } from "./tile-types";
-import type { Tile } from "./tile-types";
+import { TILES } from "./tiles/tile";
+import type { Tile } from "./tiles/tile";
 import { GameMap } from "./game-map";
 import { Display } from "rot-js";
 import { Entity } from "./entity";
@@ -51,7 +51,7 @@ class RectangularRoom {
         const isWall =
           this.isBoundary(x, this.width) || this.isBoundary(y, this.height);
 
-        row[x] = isWall ? { ...WALL_TILE } : { ...FLOOR_TILE };
+        row[x] = isWall ? { ...TILES.WALL_TILE } : { ...TILES.FLOOR_TILE };
       }
 
       this.tiles[y] = row;
@@ -94,7 +94,7 @@ export function generateDungeon(
     const second = rooms[index + 1];
 
     for (let tile of connectRooms(first, second)) {
-      dungeon.tiles[tile[1]][tile[0]] = { ...FLOOR_TILE };
+      dungeon.tiles[tile[1]][tile[0]] = { ...TILES.FLOOR_TILE };
     }
   }
 
