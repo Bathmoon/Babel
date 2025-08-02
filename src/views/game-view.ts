@@ -2,7 +2,21 @@ import { BaseView } from "./base-view";
 import { GameMap } from "../game-map";
 import { Display } from "rot-js";
 import { generateDungeon } from "../generation";
-import { Actor } from "../entity";
+import {
+  Actor,
+  Item,
+  spawnChainMail,
+  spawnConfusionScroll,
+  spawnDagger,
+  spawnFireballScroll,
+  spawnHealthPotion,
+  spawnLeatherArmor,
+  spawnLightningScroll,
+  spawnOrc,
+  spawnPlayer,
+  spawnSword,
+  spawnTroll,
+} from "../entity";
 import {
   BaseInputHandler,
   GameInputHandler,
@@ -26,16 +40,6 @@ import {
 import { type Tile } from "../tile-types";
 import { ConfusedEnemy } from "../components/ai/confused-ai";
 import { HostileEnemy } from "../components/ai/hostile-ai";
-import {
-  spawnConfusionScroll,
-  spawnFireballScroll,
-  spawnOrc,
-  spawnHealthPotion,
-  spawnPlayer,
-  spawnLightningScroll,
-  spawnTroll,
-} from "../entity";
-import { Item } from "../entity";
 
 // Types for serializing our game for saving
 type SerializedGameMap = {
@@ -109,8 +113,21 @@ export class GameView extends BaseView {
       this.player = loadedPlayer;
       this.currentFloor = floor;
     } else {
+      const dagger = spawnDagger(this.gameMap, 0, 0);
+      const leatherArmor = spawnLeatherArmor(this.gameMap, 0, 0);
+
       this.currentFloor = currentFloor;
       this.generateFloor();
+
+      dagger.parent = this.player.inventory;
+      this.player.inventory.items.push(dagger);
+      this.player.equipment.toggleEquip(dagger, false);
+      this.gameMap.removeEntity(dagger);
+
+      leatherArmor.parent = this.player.inventory;
+      this.player.inventory.items.push(leatherArmor);
+      this.player.equipment.toggleEquip(leatherArmor, false);
+      this.gameMap.removeEntity(leatherArmor);
     }
 
     this.inputHandler = new GameInputHandler();
@@ -214,14 +231,6 @@ export class GameView extends BaseView {
       );
     }
 
-    if (this.inputHandler.inputState === InputState.UseInventory) {
-      this.renderInventory("Select an item to use");
-    }
-
-    if (this.inputHandler.inputState === InputState.DropInventory) {
-      this.renderInventory("Select an item to drop");
-    }
-
     if (this.inputHandler.inputState === InputState.Target) {
       const [x, y] = this.inputHandler.mousePosition;
       this.display.drawOver(x, y, null, "#000", "#fff");
@@ -265,7 +274,12 @@ export class GameView extends BaseView {
 
         if (entity instanceof Actor) {
           const actor = entity as Actor;
-          const { maxHp, _hp: hp, defense, power } = actor.fighter;
+          const {
+            maxHp,
+            _hp: hp,
+            baseDefense: defense,
+            basePower: power,
+          } = actor.fighter;
           const {
             currentXp,
             currentLevel,
@@ -345,8 +359,10 @@ export class GameView extends BaseView {
     map.tiles = parsedMap.tiles;
 
     const playerInventory = playerEntity?.inventory || [];
+
     for (let entry of playerInventory) {
       let item: Item | null = null;
+
       switch (entry.itemType) {
         case "Health Potion": {
           item = spawnHealthPotion(map, 0, 0);
@@ -362,6 +378,22 @@ export class GameView extends BaseView {
         }
         case "Fireball Scroll": {
           item = spawnFireballScroll(map, 0, 0);
+          break;
+        }
+        case "Dagger": {
+          item = spawnDagger(map, 0, 0);
+          break;
+        }
+        case "Sword": {
+          item = spawnSword(map, 0, 0);
+          break;
+        }
+        case "Leather Armor": {
+          item = spawnLeatherArmor(map, 0, 0);
+          break;
+        }
+        case "Chain Mail": {
+          item = spawnChainMail(map, 0, 0);
           break;
         }
       }
@@ -398,6 +430,14 @@ export class GameView extends BaseView {
         spawnConfusionScroll(map, entity.x, entity.y);
       } else if (entity.name === "Fireball Scroll") {
         spawnFireballScroll(map, entity.x, entity.y);
+      } else if (entity.name === "Dagger") {
+        spawnDagger(map, entity.x, entity.y);
+      } else if (entity.name === "Sword") {
+        spawnSword(map, entity.x, entity.y);
+      } else if (entity.name === "Leather Armor") {
+        spawnLeatherArmor(map, entity.x, entity.y);
+      } else if (entity.name === "Chain Mail") {
+        spawnChainMail(map, entity.x, entity.y);
       }
     }
 

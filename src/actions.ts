@@ -61,7 +61,7 @@ export class MeleeAction extends ActionWithDirection {
       throw new ImpossibleException("Nothing to attack.");
     }
 
-    const damage = actor.fighter.power - target.fighter.defense;
+    const damage = actor.fighter.basePower - target.fighter.baseDefense;
     const description = `${actor.name.toUpperCase()} attacks ${target.name}`;
     const messageColor =
       actor.name === "Player" ? Colors.PlayerAttack : Colors.EnemyAttack;
@@ -145,7 +145,7 @@ export class ItemAction extends Action {
   }
 
   perform(entity: Entity, gameMap: GameMap) {
-    this.item?.consumable.activate(this, entity, gameMap);
+    this.item?.consumable?.activate(this, entity, gameMap);
   }
 }
 
@@ -156,6 +156,27 @@ export class DropItem extends ItemAction {
     if (!dropper || !this.item) return;
 
     dropper.inventory.drop(this.item, gameMap);
+
+    if (dropper.equipment.itemIsEquipped(this.item)) {
+      dropper.equipment.toggleEquip(this.item);
+    }
+  }
+}
+
+export class EquipAction extends Action {
+  item: Item;
+
+  constructor(item: Item) {
+    super();
+
+    this.item = item;
+  }
+
+  perform(entity: Entity, _gameMap: GameMap) {
+    const actor = entity as Actor;
+    if (!actor) return;
+    debugger;
+    actor.equipment.toggleEquip(this.item);
   }
 }
 

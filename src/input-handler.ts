@@ -6,6 +6,7 @@ import {
   PickupAction,
   WaitAction,
   TakeStairsAction,
+  EquipAction,
 } from "./actions";
 import { Colors } from "./ui/colors";
 import { Engine } from "./engine";
@@ -166,12 +167,12 @@ export class CharacterViewInputHandler extends BaseInputHandler {
     display.drawText(
       x + 1,
       y + 4,
-      `Attack: ${window.engine.player.fighter.power}`,
+      `Attack: ${window.engine.player.fighter.basePower}`,
     );
     display.drawText(
       x + 1,
       y + 5,
-      `Defense: ${window.engine.player.fighter.defense}`,
+      `Defense: ${window.engine.player.fighter.baseDefense}`,
     );
   }
 
@@ -228,6 +229,33 @@ export class InventoryInputHandler extends BaseInputHandler {
     super(inputState);
   }
 
+  onRender(display: Display) {
+    const title =
+      this.inputState === InputState.UseInventory
+        ? "Select an item to use"
+        : "Select an item to drop";
+    const itemCount = window.engine.player.inventory.items.length;
+    const height = itemCount + 2 <= 3 ? 3 : itemCount + 2;
+    const width = title.length + 4;
+    const x = window.engine.player.x <= 30 ? 40 : 0;
+    const y = 0;
+
+    renderFrameWithTitle(x, y, width, height, title);
+
+    if (itemCount > 0) {
+      window.engine.player.inventory.items.forEach((i, index) => {
+        const key = String.fromCharCode("a".charCodeAt(0) + index);
+        const isEquipped = window.engine.player.equipment.itemIsEquipped(i);
+        let itemString = `(${key}) ${i.name}`;
+
+        itemString = isEquipped ? `${itemString} (E)` : itemString;
+        display.drawText(x + 1, y + index + 1, itemString);
+      });
+    } else {
+      display.drawText(x + 1, y + 1, "(Empty)");
+    }
+  }
+
   handleKeyboardInput(event: KeyboardEvent): Action | null {
     if (event.key.length === 1) {
       const ordinal = event.key.charCodeAt(0);
@@ -235,10 +263,18 @@ export class InventoryInputHandler extends BaseInputHandler {
 
       if (index >= 0 && index <= 26) {
         const item = window.engine.player.inventory.items[index];
+
         if (item) {
           this.nextHandler = new GameInputHandler();
+
           if (this.inputState === InputState.UseInventory) {
-            return item.consumable.getAction();
+            if (item.consumable) {
+              return item.consumable.getAction();
+            } else if (item.equippable) {
+              return new EquipAction(item);
+            }
+
+            return null;
           } else if (this.inputState === InputState.DropInventory) {
             return new DropItem(item);
           }
@@ -248,6 +284,7 @@ export class InventoryInputHandler extends BaseInputHandler {
         }
       }
     }
+
     this.nextHandler = new GameInputHandler();
     return null;
   }
@@ -372,12 +409,12 @@ export class LevelUpEventHandler extends BaseInputHandler {
     display.drawText(
       x + 1,
       5,
-      `b) Strength (+1 attack, from ${window.engine.player.fighter.power})`,
+      `b) Strength (+1 attack, from ${window.engine.player.fighter.basePower})`,
     );
     display.drawText(
       x + 1,
       6,
-      `c) Agility (+1 defense, from ${window.engine.player.fighter.defense})`,
+      `c) Agility (+1 defense, from ${window.engine.player.fighter.baseDefense})`,
     );
   }
 

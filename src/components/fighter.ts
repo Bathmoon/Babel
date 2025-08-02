@@ -7,14 +7,14 @@ export class Fighter extends BaseComponent {
   parent: Actor | null;
   _hp: number;
   maxHp: number;
-  defense: number;
-  power: number;
+  public baseDefense: number;
+  public basePower: number;
 
   constructor(maxHp: number, defense: number, power: number) {
     super();
     this.maxHp = maxHp;
-    this.defense = defense;
-    this.power = power;
+    this.baseDefense = defense;
+    this.basePower = power;
     this._hp = maxHp;
     this.parent = null;
   }
@@ -23,12 +23,44 @@ export class Fighter extends BaseComponent {
     return this._hp;
   }
 
+  public get defenseBonus(): number {
+    if (this.parent?.equipment) {
+      return this.parent.equipment.defenseBonus;
+    }
+
+    return 0;
+  }
+
+  public get powerBonus(): number {
+    if (this.parent?.equipment) {
+      return this.parent.equipment.powerBonus;
+    }
+
+    return 0;
+  }
+
+  public get defense(): number {
+    return this.baseDefense + this.defenseBonus;
+  }
+
+  public get power(): number {
+    return this.basePower + this.powerBonus;
+  }
+
   public set hp(value: number) {
     this._hp = Math.max(0, Math.min(value, this.maxHp));
 
     if (this._hp === 0 && this.parent?.canAct) {
       this.die();
     }
+  }
+
+  public set power(value: number) {
+    this.basePower += value;
+  }
+
+  public set defense(value: number) {
+    this.baseDefense += value;
   }
 
   heal(amount: number): number {
