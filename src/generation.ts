@@ -2,16 +2,69 @@
 import { FLOOR_TILE, WALL_TILE, STAIRS_DOWN_TILE } from "./tile-types";
 import type { Tile } from "./tile-types";
 import { GameMap } from "./game-map";
-import { Display } from "rot-js";
-import {
-  Entity,
-  spawnHealthPotion,
-  spawnOrc,
-  spawnTroll,
-  spawnConfusionScroll,
-  spawnLightningScroll,
-  spawnFireballScroll,
-} from "./entity";
+import { Display, RNG } from "rot-js";
+import { Entity, spawnMap } from "./entity";
+
+type FloorValue = [number, number][];
+
+const MAX_ITEMS_BY_FLOOR: FloorValue = [
+  [1, 1],
+  [4, 2],
+];
+
+const MAX_MONSTERS_BY_FLOOR: FloorValue = [
+  [1, 2],
+  [4, 3],
+  [6, 5],
+];
+
+type Choice = {
+  value: string;
+  weight: number;
+};
+
+type WeightedChoices = {
+  floor: number;
+  weights: Choice[];
+};
+
+const ITEM_CHANCES: WeightedChoices[] = [
+  {
+    floor: 0,
+    weights: [{ value: "spawnHealthPotion", weight: 35 }],
+  },
+  {
+    floor: 2,
+    weights: [{ value: "spawnConfusionScroll", weight: 10 }],
+  },
+  {
+    floor: 4,
+    weights: [{ value: "spawnLightningScroll", weight: 25 }],
+  },
+  {
+    floor: 6,
+    weights: [{ value: "spawnFireballScroll", weight: 25 }],
+  },
+];
+
+const MONSTER_CHANCES: WeightedChoices[] = [
+  {
+    floor: 0,
+    weights: [{ value: "spawnOrc", weight: 80 }],
+  },
+  {
+    floor: 3,
+    weights: [{ value: "spawnTroll", weight: 15 }],
+  },
+  {
+    floor: 5,
+    weights: [{ value: "spawnTroll", weight: 30 }],
+  },
+  {
+    floor: 7,
+    weights: [{ value: "spawnTroll", weight: 60 }],
+  },
+];
 
 interface Bounds {
   topLeftX: number;
@@ -91,11 +144,16 @@ class RectangularRoom {
 function placeEntities(
   room: RectangularRoom,
   dungeon: GameMap,
-  maxMonsters: number,
-  maxItems: number,
+  floorNumber: number,
 ) {
-  const numberOfMonstersToAdd = generateRandomNumber(0, maxMonsters);
-  const numberOfItemsToAdd = generateRandomNumber(0, maxItems);
+  const numberOfMonstersToAdd = generateRandomNumber(
+    0,
+    getMaxValueForFloor(MAX_MONSTERS_BY_FLOOR, floorNumber),
+  );
+  const numberOfItemsToAdd = generateRandomNumber(
+    0,
+    getMaxValueForFloor(MAX_ITEMS_BY_FLOOR, floorNumber),
+  );
   const bounds = room.bounds;
 
   for (let i = 0; i < numberOfMonstersToAdd; i++) {
@@ -109,10 +167,10 @@ function placeEntities(
     );
 
     if (!dungeon.entities.some((e) => e.x == x && e.y == y)) {
-      if (Math.random() < 0.8) {
-        spawnOrc(dungeon, x, y);
-      } else {
-        spawnTroll(dungeon, x, y);
+      const weights = getWeights(MONSTER_CHANCES, floorNumber);
+      const spawnType = RNG.getWeightedValue(weights);
+      if (spawnType) {
+        spawnMap[spawnType](dungeon, x, y);
       }
     }
   }
@@ -128,19 +186,27 @@ function placeEntities(
     );
 
     if (!dungeon.entities.some((e) => e.x == x && e.y == y)) {
-      const itemChance = Math.random();
-
-      if (itemChance < 0.7) {
-        spawnHealthPotion(dungeon, x, y);
-      } else if (itemChance < 0.8) {
-        spawnFireballScroll(dungeon, x, y);
-      } else if (itemChance < 0.9) {
-        spawnConfusionScroll(dungeon, x, y);
-      } else {
-        spawnLightningScroll(dungeon, x, y);
+      const weights = getWeights(ITEM_CHANCES, floorNumber);
+      const spawnType = RNG.getWeightedValue(weights);
+      if (spawnType) {
+        spawnMap[spawnType](dungeon, x, y);
       }
     }
   }
+}
+
+function getMaxValueForFloor(
+  maxValueByFloor: FloorValue,
+  floor: number,
+): number {
+  let current = 0;
+
+  for (let [min, value] of maxValueByFloor) {
+    if (min > floor) break;
+    current = value;
+  }
+
+  return current;
 }
 
 export function generateDungeon(
@@ -153,6 +219,7 @@ export function generateDungeon(
   maxItems: number,
   player: Entity,
   display: Display,
+  currentFloor: number,
 ): GameMap {
   const dungeon = new GameMap(mapWidth, mapHeight, display, [player]);
   const rooms: RectangularRoom[] = [];
@@ -177,7 +244,7 @@ export function generateDungeon(
     }
 
     dungeon.addRoom(x, y, newRoom.tiles);
-    placeEntities(newRoom, dungeon, maxMonsters, maxItems);
+    placeEntities(newRoom, dungeon, currentFloor);
     rooms.push(newRoom);
     centerOfLastRoom = newRoom.center;
   }
@@ -236,4 +303,25 @@ function* connectRooms(
       yield currentPosition;
     }
   }
+}
+
+type WeightMap = {
+  [key: string]: number;
+};
+
+function getWeights(
+  chancesByFloor: WeightedChoices[],
+  floorNumber: number,
+): WeightMap {
+  let current: WeightMap = {};
+
+  for (let { floor, weights } of chancesByFloor) {
+    if (floor > floorNumber) break;
+
+    for (let { value, weight } of weights) {
+      current[value] = weight;
+    }
+  }
+
+  return current;
 }

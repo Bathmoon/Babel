@@ -9,7 +9,6 @@ import {
   InputState,
 } from "../input-handler";
 import {
-  Action,
   BumpAction,
   ItemAction,
   MeleeAction,
@@ -131,6 +130,7 @@ export class GameView extends BaseView {
       GameView.MAX_ITEMS_PER_ROOM,
       this.player,
       this.display,
+      this.currentFloor,
     );
   }
 
