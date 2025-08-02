@@ -14,6 +14,7 @@ export class GameMap {
   entities: Entity[];
 
   tiles: Tile[][];
+  downStairsLocation: [number, number];
 
   constructor(
     width: number,
@@ -37,6 +38,8 @@ export class GameMap {
 
       this.tiles[y] = row;
     }
+
+    this.downStairsLocation = [0, 0];
   }
 
   public get gameMap(): GameMap {

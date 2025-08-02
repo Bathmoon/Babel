@@ -1,6 +1,7 @@
 import { BaseAI } from "./components/ai/ai";
 import { HostileEnemy } from "./components/ai/hostile-ai";
 import { Fighter } from "./components/fighter";
+import { Level } from "./components/level";
 import { GameMap } from "./game-map";
 import {
   type Consumable,
@@ -91,6 +92,7 @@ export class Actor extends Entity {
   ai: BaseAI | null;
   fighter: Fighter;
   inventory: Inventory;
+  level: Level;
   parent: GameMap | null = null;
 
   constructor(
@@ -103,6 +105,7 @@ export class Actor extends Entity {
     ai: BaseAI | null,
     fighter: Fighter,
     inventory: Inventory,
+    level: Level,
     parent: GameMap | null = null,
   ) {
     super(
@@ -127,6 +130,7 @@ export class Actor extends Entity {
     this.parent = parent;
     this.inventory = inventory;
     this.fighter.parent = this;
+    this.level = level;
     this.inventory.parent = this;
   }
 
@@ -185,7 +189,7 @@ export function spawnPlayer(
   y: number,
   gameMap: GameMap | null = null,
 ): Actor {
-  return new Actor(
+  const player = new Actor(
     x,
     y,
     "@",
@@ -195,8 +199,12 @@ export function spawnPlayer(
     null,
     new Fighter(30, 2, 5),
     new Inventory(26),
+    new Level(20),
     gameMap,
   );
+
+  player.level.parent = player;
+  return player;
 }
 
 export function spawnOrc(gameMap: GameMap, x: number, y: number): Actor {
@@ -210,6 +218,7 @@ export function spawnOrc(gameMap: GameMap, x: number, y: number): Actor {
     new HostileEnemy(),
     new Fighter(10, 0, 3),
     new Inventory(0),
+    new Level(0, 35),
     gameMap,
   );
 }
@@ -225,6 +234,7 @@ export function spawnTroll(gameMap: GameMap, x: number, y: number): Actor {
     new HostileEnemy(),
     new Fighter(16, 1, 4),
     new Inventory(0),
+    new Level(0, 100),
     gameMap,
   );
 }

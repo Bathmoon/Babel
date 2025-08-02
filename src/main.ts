@@ -17,6 +17,8 @@ import { spawnPlayer } from "./entity";
     + factory functions? like spawnplayer apparently
   9. Split out actions into folder/files
   10. Import json files as consumables etc instead of hardcoding classes for everything all over the place?
+  11. When loading the game, the stairs location is not remembered and defaults to 0, 0
+  12. game-view.. why do I need to do this for currentxp but nothing else? player.level.currentXp = playerEntity.level?.currentXp ?? 0;
 */
 
 declare global {

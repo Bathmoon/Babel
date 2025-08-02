@@ -14,6 +14,7 @@ import {
   ItemAction,
   MeleeAction,
   PickupAction,
+  TakeStairsAction,
   WaitAction,
 } from "../actions";
 import { ImpossibleException } from "../exceptions";
@@ -39,6 +40,7 @@ import { Item } from "../entity";
 
 // Types for serializing our game for saving
 type SerializedGameMap = {
+  currentFloor: number;
   width: number;
   height: number;
   tiles: Tile[][];
@@ -53,9 +55,18 @@ type SerializedEntity = {
   backGroundColor: string;
   name: string;
   fighter: SerializedFighter | null;
+  level: SerializedLevel | null;
   aiType: string | null;
   confusedTurnsRemaining: number;
   inventory: SerializedItem[] | null;
+};
+
+type SerializedLevel = {
+  levelUpBase: number;
+  xpGiven: number;
+  currentLevel: number;
+  currentXp: number;
+  levelUpFactor: number;
 };
 
 type SerializedFighter = {
@@ -78,36 +89,49 @@ export class GameView extends BaseView {
   public static readonly MAX_MONSTERS_PER_ROOM = 2;
   public static readonly MAX_ITEMS_PER_ROOM = 2;
 
-  gameMap: GameMap;
+  gameMap!: GameMap;
   inputHandler: BaseInputHandler;
+  currentFloor: number;
 
   constructor(
     display: Display,
     player: Actor,
     serializedGameMap: string | null = null,
+    currentFloor: number = 0,
   ) {
     super(display, player);
 
     if (serializedGameMap) {
-      const [map, loadedPlayer] = GameView.loadGame(serializedGameMap, display);
+      const [map, loadedPlayer, floor] = GameView.loadGame(
+        serializedGameMap,
+        display,
+      );
       this.gameMap = map;
       this.player = loadedPlayer;
+      this.currentFloor = floor;
     } else {
-      this.gameMap = generateDungeon(
-        GameView.MAP_WIDTH,
-        GameView.MAP_HEIGHT,
-        GameView.MAX_ROOMS,
-        GameView.MIN_ROOM_SIZE,
-        GameView.MAX_ROOM_SIZE,
-        GameView.MAX_MONSTERS_PER_ROOM,
-        GameView.MAX_ITEMS_PER_ROOM,
-        this.player,
-        this.display,
-      );
+      this.currentFloor = currentFloor;
+      this.generateFloor();
     }
 
     this.inputHandler = new GameInputHandler();
     this.gameMap.updateFov(this.player);
+  }
+
+  generateFloor(): void {
+    this.currentFloor += 1;
+
+    this.gameMap = generateDungeon(
+      GameView.MAP_WIDTH,
+      GameView.MAP_HEIGHT,
+      GameView.MAX_ROOMS,
+      GameView.MIN_ROOM_SIZE,
+      GameView.MAX_ROOM_SIZE,
+      GameView.MAX_MONSTERS_PER_ROOM,
+      GameView.MAX_ITEMS_PER_ROOM,
+      this.player,
+      this.display,
+    );
   }
 
   handleEnemyTurns() {
@@ -133,7 +157,8 @@ export class GameView extends BaseView {
       action instanceof MeleeAction ||
       action instanceof WaitAction ||
       action instanceof ItemAction ||
-      action instanceof PickupAction
+      action instanceof PickupAction ||
+      action instanceof TakeStairsAction
     ) {
       try {
         action.perform(this.player, this.gameMap);
@@ -169,6 +194,8 @@ export class GameView extends BaseView {
       this.inputHandler.mousePosition,
       this.gameMap,
     );
+
+    this.display.drawText(0, 47, `Dungeon level: ${this.currentFloor}`);
 
     this.gameMap.render();
 
@@ -225,11 +252,13 @@ export class GameView extends BaseView {
 
   private toObject(): SerializedGameMap {
     return {
+      currentFloor: this.currentFloor,
       width: this.gameMap.width,
       height: this.gameMap.height,
       tiles: this.gameMap.tiles,
       entities: this.gameMap.entities.map((entity) => {
         let fighter = null;
+        let level = null;
         let aiType = null;
         let inventory = null;
         let confusedTurnsRemaining = 0;
@@ -237,8 +266,23 @@ export class GameView extends BaseView {
         if (entity instanceof Actor) {
           const actor = entity as Actor;
           const { maxHp, _hp: hp, defense, power } = actor.fighter;
+          const {
+            currentXp,
+            currentLevel,
+            levelUpBase,
+            levelUpFactor,
+            xpGiven,
+          } = actor.level;
 
           fighter = { maxHp, hp, defense, power };
+
+          level = {
+            currentXp,
+            currentLevel,
+            levelUpBase,
+            levelUpFactor,
+            xpGiven,
+          };
 
           if (actor.ai) {
             aiType = actor.ai instanceof HostileEnemy ? "hostile" : "confused";
@@ -264,6 +308,7 @@ export class GameView extends BaseView {
           backGroundColor: entity.backGroundColor,
           name: entity.name,
           fighter,
+          level,
           aiType,
           confusedTurnsRemaining,
           inventory,
@@ -281,7 +326,7 @@ export class GameView extends BaseView {
   private static loadGame(
     serializedGameMap: string,
     display: Display,
-  ): [GameMap, Actor] {
+  ): [GameMap, Actor, number] {
     const parsedMap = JSON.parse(serializedGameMap) as SerializedGameMap;
     const playerEntity = parsedMap.entities.find((e) => e.name === "Player");
 
@@ -290,6 +335,8 @@ export class GameView extends BaseView {
     const player = spawnPlayer(playerEntity.x, playerEntity.y);
 
     player.fighter.hp = playerEntity.fighter?.hp || player.fighter.hp;
+    player.level.currentLevel = player.level?.currentLevel;
+    player.level.currentXp = playerEntity.level?.currentXp ?? 0;
     window.engine.player = player;
 
     const map = new GameMap(parsedMap.width, parsedMap.height, display, [
@@ -354,6 +401,6 @@ export class GameView extends BaseView {
       }
     }
 
-    return [map, player];
+    return [map, player, parsedMap.currentFloor];
   }
 }

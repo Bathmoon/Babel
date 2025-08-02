@@ -159,6 +159,23 @@ export class DropItem extends ItemAction {
   }
 }
 
+export class TakeStairsAction extends Action {
+  perform(entity: Entity, gameMap: GameMap) {
+    if (
+      entity.x === gameMap.downStairsLocation[0] &&
+      entity.y == gameMap.downStairsLocation[1]
+    ) {
+      window.engine.view.generateFloor();
+      window.messageLog.addMessage(
+        "You descend the staircase.",
+        Colors.Descend,
+      );
+    } else {
+      throw new ImpossibleException("There are no stairs here.");
+    }
+  }
+}
+
 export class LogAction implements Action {
   moveLog: () => void;
 

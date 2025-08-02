@@ -1,5 +1,5 @@
 // Set debug mode in the configuration.ts
-import { FLOOR_TILE, WALL_TILE } from "./tile-types";
+import { FLOOR_TILE, WALL_TILE, STAIRS_DOWN_TILE } from "./tile-types";
 import type { Tile } from "./tile-types";
 import { GameMap } from "./game-map";
 import { Display } from "rot-js";
@@ -157,6 +157,8 @@ export function generateDungeon(
   const dungeon = new GameMap(mapWidth, mapHeight, display, [player]);
   const rooms: RectangularRoom[] = [];
 
+  let centerOfLastRoom: [number, number] = [0, 0];
+
   for (let count = 0; count < maxRooms; count++) {
     // Generate random room size
     const width = generateRandomNumber(minSize, maxSize);
@@ -177,6 +179,7 @@ export function generateDungeon(
     dungeon.addRoom(x, y, newRoom.tiles);
     placeEntities(newRoom, dungeon, maxMonsters, maxItems);
     rooms.push(newRoom);
+    centerOfLastRoom = newRoom.center;
   }
 
   for (let index = 0; index < rooms.length - 1; index++) {
@@ -191,6 +194,12 @@ export function generateDungeon(
   const startPoint = rooms[0].center;
   player.x = startPoint[0];
   player.y = startPoint[1];
+
+  dungeon.tiles[centerOfLastRoom[1]][centerOfLastRoom[0]] = {
+    ...STAIRS_DOWN_TILE,
+  };
+
+  dungeon.downStairsLocation = centerOfLastRoom;
 
   return dungeon;
 }

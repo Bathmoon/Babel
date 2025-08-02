@@ -12,7 +12,8 @@ export abstract class BaseView {
     this.player = player;
   }
 
-  abstract update(event: KeyboardEvent): BaseView;
+  generateFloor() {}
 
+  abstract update(event: KeyboardEvent): BaseView;
   abstract render(): void;
 }

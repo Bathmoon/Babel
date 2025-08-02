@@ -38,3 +38,18 @@ export const WALL_TILE: Tile = {
   globalPosition: [0, 0],
   roomPosition: [0, 0],
 };
+
+export const STAIRS_DOWN_TILE: Tile = {
+  isWalkable: true,
+  isTransparent: true,
+  isVisible: false,
+  isSeen: false,
+  dark: { symbol: ">", foreGroundColor: "#000064", backGroundColor: "#323296" },
+  light: {
+    symbol: ">",
+    foreGroundColor: "#ffffff",
+    backGroundColor: "#c8b432",
+  },
+  globalPosition: [0, 0],
+  roomPosition: [0, 0],
+};

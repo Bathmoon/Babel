@@ -68,5 +68,7 @@ export class Fighter extends BaseComponent {
     this.parent.name = `Remains of ${this.parent.name}`;
 
     log.addMessage(deathMessage, messageColor);
+
+    window.engine.player.level.addXp(this.parent.level.xpGiven);
   }
 }
