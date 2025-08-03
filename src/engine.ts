@@ -48,12 +48,22 @@ export class Engine {
       this.update(event);
     });
 
-    Events.on("entityPosition", (coordinate: Coordinate) => {
-      console.log("Entity at position: " + coordinate);
-    });
+    if (window.verboseDebug) {
+      Events.on("entityPosition", (coordinate: Coordinate) => {
+        console.log("Entity at position: " + coordinate);
+      });
+    }
 
     this.gameMap.updateFov(this.player); // update fov for the first time or it wont happen till updating
     this.render();
+  }
+
+  handleEnemyTurns() {
+    this.gameMap.nonPlayerEntities.forEach((entity) => {
+      console.log(
+        `The ${entity.name} wonders when it will get to take a real turn.`,
+      );
+    });
   }
 
   update(event: KeyboardEvent) {
@@ -64,6 +74,7 @@ export class Engine {
       action.perform(this, this.player);
     }
 
+    this.handleEnemyTurns();
     this.gameMap.updateFov(this.player);
     this.render();
   }

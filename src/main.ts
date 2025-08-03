@@ -27,6 +27,8 @@ import { Engine } from "./engine";
 declare global {
   interface Window {
     engine: Engine;
+    debug: Boolean;
+    verboseDebug: Boolean;
   }
 }
 
@@ -35,6 +37,9 @@ window.addEventListener("DOMContentLoaded", () => {
     .setSymbol("@")
     .setSightRange(8)
     .setCoordinate(Engine.WIDTH / 2, Engine.HEIGHT / 2);
+
+  window.debug = false;
+  window.verboseDebug = false;
 
   window.engine = new Engine(player);
 });

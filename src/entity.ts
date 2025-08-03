@@ -31,6 +31,10 @@ export class Entity {
     return this;
   }
 
+  get name(): string {
+    return this._name;
+  }
+
   get x(): number {
     return this.entityCoordinate.x;
   }
@@ -49,6 +53,14 @@ export class Entity {
 
   get sightRange(): number {
     return this._sightRange;
+  }
+
+  get blocksMovement(): boolean {
+    return this._blocksMovement;
+  }
+
+  get coordinate(): Coordinate {
+    return this.entityCoordinate;
   }
 
   get spawnChance(): number {

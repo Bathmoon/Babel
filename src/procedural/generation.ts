@@ -3,7 +3,7 @@ import type { Tile } from "../tiles/tile";
 import { GameMap } from "../world/game-map";
 import { Display } from "rot-js";
 import { Entity } from "../entity";
-import { type EntityConfig } from "../entity-config";
+import { type EntityConfig, entityConfigs } from "../entity-config";
 import { type Bounds } from "./bounds";
 import { RectangularRoom } from "./room-rect";
 
@@ -12,8 +12,8 @@ function spawnEntity(config: EntityConfig, x: number, y: number): Entity {
     .setCoordinate(x, y)
     .setSymbol(config.symbol)
     .setName(config.name)
-    .setBackgroundColor(config.backGroundColor)
-    .setForegroundColor(config.foreGroundColor)
+    .setBackgroundColor(config.backGroundColor) // fixed casing here
+    .setForegroundColor(config.foreGroundColor) // fixed casing here
     .setSightRange(config.sightRange)
     .setBlocksMovement(config.blocksMovement)
     .setSpawnChance(config.spawnChance);
@@ -48,6 +48,7 @@ export function generateDungeon(
     }
 
     dungeon.addRoom(x, y, newRoom.tiles);
+
     placeEntities(newRoom, dungeon, maxMonsters);
     rooms.push(newRoom);
   }
@@ -76,27 +77,25 @@ function* connectRooms(
   roomA: RectangularRoom,
   roomB: RectangularRoom,
 ): Generator<[number, number], void, void> {
-  const endPosition = roomB.center; // set the end point at the center of the second room
-  let currentPosition = roomA.center; // set the start point of our tunnel at the center of the first room
-  let isHorizontal = Math.random() < 0.5; // flip a coin to see if we go horizontally first or vertically
-  let axisIndex = isHorizontal ? 0 : 1; // set our axisIndex to 0 (x axis) if horizontal or 1 (y axis) if vertical
+  const endPosition = roomB.center; // second room center
+  let currentPosition = roomA.center; // first room center
+  let isHorizontal = Math.random() < 0.5;
+  let axisIndex = isHorizontal ? 0 : 1;
 
-  // we'll loop until our current point is the same as the end point
-  // [0] for the first element of the tuple, [1] for the second
   while (
     currentPosition[0] !== endPosition[0] ||
     currentPosition[1] !== endPosition[1]
   ) {
     const direction = Math.sign(
-      endPosition[axisIndex] - currentPosition[axisIndex], // determine if we tunneling in the positive or negative direction
+      endPosition[axisIndex] - currentPosition[axisIndex],
     );
 
-    // if direction is 0 we have hit the destination in one direction
     if (direction !== 0) {
+      currentPosition = [...currentPosition] as [number, number]; // clone to avoid mutating original tuple
       currentPosition[axisIndex] += direction;
       yield currentPosition;
     } else {
-      axisIndex = axisIndex === 0 ? 1 : 0; // we've finished in this direction so switch to the other
+      axisIndex = axisIndex === 0 ? 1 : 0;
       yield currentPosition;
     }
   }
@@ -108,25 +107,51 @@ function placeEntities(
   maxMonsters: number,
 ) {
   const numberOfMonstersToAdd = generateRandomNumber(0, maxMonsters);
+  const bounds = room.bounds;
+  const entries = Object.entries(entityConfigs).filter(
+    ([key]) => key !== "player",
+  ); // Convert entries to array of [entityType, config] for iteration - sans player
+  const totalChance = entries.reduce(
+    (acc, [, config]) => acc + (config.spawnChance ?? 0),
+    0,
+  ); // Calculate total spawn chance sum
+  const rand = Math.random() * totalChance;
+
+  let cumulativeChance = 0;
+  let selectedType: string | null = null;
 
   for (let i = 0; i < numberOfMonstersToAdd; i++) {
-    const bounds = room.bounds;
     const x = generateRandomNumber(
       bounds.upperLeftCoordinate.x + 1,
-      bounds.upperLeftCoordinate.y - 1,
+      bounds.lowerRightCoordinate.x - 1,
     );
     const y = generateRandomNumber(
-      bounds.lowerRightCoordinate.x + 1,
+      bounds.upperLeftCoordinate.y + 1,
       bounds.lowerRightCoordinate.y - 1,
     );
 
-    if (!dungeon.entities.some((entity) => entity.x == x && entity.y == y)) {
-      dungeon.entities.push(spawnEntity());
-      if (Math.random() < entity.spawnChance / 100) {
-        console.log(`We'll be putting an orc at (${x}, ${y})!!!`);
-      } else {
-        console.log(`We'll be putting an troll at (${x}, ${y})!!!`);
+    // Skip if position is already occupied
+    if (
+      dungeon.entities.some(
+        (entity) => entity.coordinate.x === x && entity.coordinate.y === y,
+      )
+    ) {
+      continue;
+    }
+
+    for (const [type, config] of entries) {
+      cumulativeChance += config.spawnChance ?? 0;
+
+      if (rand < cumulativeChance) {
+        selectedType = type;
+        break;
       }
+    }
+
+    if (selectedType) {
+      // Spawn entity using the selected config
+      const entity = spawnEntity(entityConfigs[selectedType], x, y);
+      dungeon.entities.push(entity);
     }
   }
 }
