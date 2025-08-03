@@ -1,6 +1,6 @@
 import * as ROT from "rot-js";
 
-import { Entity } from "../entity";
+import { Entity } from "../entity/entity";
 import type { Tile } from "../tiles/tile";
 import { TILES } from "../tiles/tile";
 import { Display } from "rot-js";

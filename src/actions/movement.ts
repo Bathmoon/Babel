@@ -1,5 +1,4 @@
-import { Engine } from "../engine";
-import { Entity } from "../entity";
+import { Entity } from "../entity/entity";
 import { type Action } from "./action";
 
 export interface MovementMap {

@@ -2,7 +2,7 @@ import { TILES } from "../tiles/tile";
 import { GameMap } from "../world/game-map";
 import { Display } from "rot-js";
 import { Entity } from "../entity/entity";
-import { type EntityConfig, entityConfigs } from "../entity-config";
+import { type EntityConfig, entityConfigs } from "../entity/entity-config";
 import { RectangularRoom } from "./room-rect";
 import { EntityBuilder } from "../entity/entity-builder";
 

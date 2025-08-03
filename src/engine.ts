@@ -2,7 +2,7 @@ import * as ROT from "rot-js";
 
 import { handleInput } from "./input-handler";
 import { Coordinate } from "./components/coordinate";
-import { Entity } from "./entity";
+import { Entity } from "./entity/entity";
 import { Events } from "./eventSystem";
 import { GameMap } from "./world/game-map";
 import { generateDungeon } from "./procedural/generation";

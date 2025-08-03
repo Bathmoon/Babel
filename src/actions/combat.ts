@@ -1,6 +1,5 @@
 import { ActionWithDirection } from "./movement";
-import { Entity } from "../entity";
-import { Engine } from "../engine";
+import { Entity } from "../entity/entity";
 
 export class MeleeAction extends ActionWithDirection {
   perform(entity: Entity) {

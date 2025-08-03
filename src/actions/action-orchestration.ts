@@ -1,6 +1,5 @@
 import { ActionWithDirection } from "./movement";
-import { Engine } from "../engine";
-import { Entity } from "../entity";
+import { Entity } from "../entity/entity";
 import { MeleeAction } from "./combat";
 import { MovementAction } from "./movement";
 

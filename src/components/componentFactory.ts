@@ -7,7 +7,7 @@ export function createComponentInstance(
 ): any | null {
   switch (componentName) {
     case "health":
-      return new Health(componentData.maxHp);
+      return new Health(componentData.baseHp);
     // add cases for additional components here
     default:
       console.warn(`Unknown component: ${componentName}`);
