@@ -1,62 +1,24 @@
-import { TILES } from "./tiles/tile";
-import type { Tile } from "./tiles/tile";
-import { GameMap } from "./game-map";
+import { TILES } from "../tiles/tile";
+import type { Tile } from "../tiles/tile";
+import { GameMap } from "../world/game-map";
 import { Display } from "rot-js";
-import { Entity } from "./entity";
+import { Entity } from "../entity";
+import { type EntityConfig } from "../entity-config";
+import { type Bounds } from "./bounds";
+import { RectangularRoom } from "./room-rect";
 
-class RectangularRoom {
-  topLeftX: number;
-  topLeftY: number;
-  width: number;
-  height: number;
+function spawnEntity(config: EntityConfig, x: number, y: number): Entity {
+  const entity = new Entity()
+    .setCoordinate(x, y)
+    .setSymbol(config.symbol)
+    .setName(config.name)
+    .setBackgroundColor(config.backGroundColor)
+    .setForegroundColor(config.foreGroundColor)
+    .setSightRange(config.sightRange)
+    .setBlocksMovement(config.blocksMovement)
+    .setSpawnChance(config.spawnChance);
 
-  tiles: Tile[][];
-
-  constructor(x: number, y: number, width: number, height: number) {
-    this.topLeftX = x;
-    this.topLeftY = y;
-    this.width = width;
-    this.height = height;
-    this.tiles = new Array(this.height);
-
-    this.build();
-  }
-
-  public get center(): [number, number] {
-    const centerX = this.topLeftX + Math.floor(this.width / 2);
-    const centerY = this.topLeftY + Math.floor(this.height / 2);
-
-    return [centerX, centerY];
-  }
-
-  isIntersecting(otherRoom: RectangularRoom): boolean {
-    return (
-      this.topLeftX <= otherRoom.topLeftX + otherRoom.width &&
-      this.topLeftX + this.width >= otherRoom.topLeftX &&
-      this.topLeftY <= otherRoom.topLeftY + otherRoom.height &&
-      this.topLeftY + this.width >= otherRoom.topLeftY
-    );
-  }
-
-  // take an x or y value and compare it against the width or height dimensions
-  isBoundary(v: number, dimension: number) {
-    return v === 0 || v === dimension - 1; // - 1 since the width/height are not 0 based
-  }
-
-  build() {
-    for (let y = 0; y < this.height; y++) {
-      const row = new Array(this.width);
-
-      for (let x = 0; x < this.width; x++) {
-        const isWall =
-          this.isBoundary(x, this.width) || this.isBoundary(y, this.height);
-
-        row[x] = isWall ? { ...TILES.WALL_TILE } : { ...TILES.FLOOR_TILE };
-      }
-
-      this.tiles[y] = row;
-    }
-  }
+  return entity;
 }
 
 export function generateDungeon(
@@ -65,10 +27,11 @@ export function generateDungeon(
   maxRooms: number,
   minSize: number,
   maxSize: number,
+  maxMonsters: number,
   player: Entity,
   display: Display,
 ): GameMap {
-  const dungeon = new GameMap(mapWidth, mapHeight, display);
+  const dungeon = new GameMap(mapWidth, mapHeight, display, [player]);
   const rooms: RectangularRoom[] = [];
 
   for (let count = 0; count < maxRooms; count++) {
@@ -85,7 +48,7 @@ export function generateDungeon(
     }
 
     dungeon.addRoom(x, y, newRoom.tiles);
-
+    placeEntities(newRoom, dungeon, maxMonsters);
     rooms.push(newRoom);
   }
 
@@ -106,7 +69,7 @@ export function generateDungeon(
 }
 
 function generateRandomNumber(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min) + min);
+  return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 function* connectRooms(
@@ -135,6 +98,35 @@ function* connectRooms(
     } else {
       axisIndex = axisIndex === 0 ? 1 : 0; // we've finished in this direction so switch to the other
       yield currentPosition;
+    }
+  }
+}
+
+function placeEntities(
+  room: RectangularRoom,
+  dungeon: GameMap,
+  maxMonsters: number,
+) {
+  const numberOfMonstersToAdd = generateRandomNumber(0, maxMonsters);
+
+  for (let i = 0; i < numberOfMonstersToAdd; i++) {
+    const bounds = room.bounds;
+    const x = generateRandomNumber(
+      bounds.upperLeftCoordinate.x + 1,
+      bounds.upperLeftCoordinate.y - 1,
+    );
+    const y = generateRandomNumber(
+      bounds.lowerRightCoordinate.x + 1,
+      bounds.lowerRightCoordinate.y - 1,
+    );
+
+    if (!dungeon.entities.some((entity) => entity.x == x && entity.y == y)) {
+      dungeon.entities.push(spawnEntity());
+      if (Math.random() < entity.spawnChance / 100) {
+        console.log(`We'll be putting an orc at (${x}, ${y})!!!`);
+      } else {
+        console.log(`We'll be putting an troll at (${x}, ${y})!!!`);
+      }
     }
   }
 }

@@ -4,8 +4,8 @@ import { handleInput } from "./input-handler";
 import { Coordinate } from "./components/coordinate";
 import { Entity } from "./entity";
 import { Events } from "./eventSystem";
-import { GameMap } from "./game-map";
-import { generateDungeon } from "./generation";
+import { GameMap } from "./world/game-map";
+import { generateDungeon } from "./procedural/generation";
 
 export class Engine {
   public static readonly WIDTH = 80;
@@ -15,15 +15,14 @@ export class Engine {
   public static readonly MIN_ROOM_SIZE = 6;
   public static readonly MAX_ROOM_SIZE = 10;
   public static readonly MAX_ROOMS = 30;
+  public static readonly MAX_MONSTERS_PER_ROOM = 2;
 
   display: ROT.Display;
   gameMap: GameMap;
 
   player: Entity;
-  entities: Entity[];
 
-  constructor(entities: Entity[], player: Entity) {
-    this.entities = entities;
+  constructor(player: Entity) {
     this.player = player;
 
     this.display = new ROT.Display({
@@ -40,6 +39,7 @@ export class Engine {
       Engine.MAX_ROOMS,
       Engine.MIN_ROOM_SIZE,
       Engine.MAX_ROOM_SIZE,
+      Engine.MAX_MONSTERS_PER_ROOM,
       player,
       this.display,
     );
@@ -52,6 +52,7 @@ export class Engine {
       console.log("Entity at position: " + coordinate);
     });
 
+    this.gameMap.updateFov(this.player); // update fov for the first time or it wont happen till updating
     this.render();
   }
 
@@ -69,16 +70,5 @@ export class Engine {
 
   render() {
     this.gameMap.render();
-    this.entities.forEach((entity) => {
-      this.display.draw(
-        entity.x,
-        entity.y,
-        entity.symbol,
-        entity.foreGroundColor,
-        entity.backGroundColor,
-      );
-
-      entity.emitCoordinates();
-    });
   }
 }

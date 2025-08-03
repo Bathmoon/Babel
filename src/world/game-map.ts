@@ -1,8 +1,8 @@
 import * as ROT from "rot-js";
 
-import { Entity } from "./entity";
-import type { Tile } from "./tiles/tile";
-import { TILES } from "./tiles/tile";
+import { Entity } from "../entity";
+import type { Tile } from "../tiles/tile";
+import { TILES } from "../tiles/tile";
 import { Display } from "rot-js";
 
 export class GameMap {
@@ -10,13 +10,20 @@ export class GameMap {
   height: number;
   display: Display;
 
+  entities: Entity[];
   tiles: Tile[][];
 
-  constructor(width: number, height: number, display: Display) {
+  constructor(
+    width: number,
+    height: number,
+    display: Display,
+    entities: Entity[],
+  ) {
     this.width = width;
     this.height = height;
     this.display = display;
 
+    this.entities = entities;
     this.tiles = new Array(this.height);
 
     for (let y = 0; y < this.height; y++) {
@@ -91,7 +98,21 @@ export class GameMap {
           ? tile.light.backGroundColor
           : tile.dark.backGroundColor;
 
+        // draw tiles
         this.display.draw(x, y, symbol, foreGroundColor, backGroundColor);
+
+        // draw entities
+        this.entities.forEach((entity) => {
+          this.display.draw(
+            entity.x,
+            entity.y,
+            entity.symbol,
+            entity.foreGroundColor,
+            entity.backGroundColor,
+          );
+
+          entity.emitCoordinates();
+        });
       }
     }
   }

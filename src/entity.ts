@@ -19,6 +19,11 @@ export class Entity {
   // How far an entity can "see"
   _sightRange: number = 0;
 
+  // Basic entity properties
+  _name: string = "Unnamed";
+  _blocksMovement: boolean = false;
+  _spawnChance: number = 0; // percentage from 0-100
+
   // We add components and properties using the build pattern
   addComponent(component: Component<any>): Entity {
     this.components.push(component);
@@ -44,6 +49,10 @@ export class Entity {
 
   get sightRange(): number {
     return this._sightRange;
+  }
+
+  get spawnChance(): number {
+    return this._spawnChance;
   }
 
   set x(value: number) {
@@ -100,6 +109,24 @@ export class Entity {
 
   setSightRange(range: number): Entity {
     this._sightRange = range;
+
+    return this;
+  }
+
+  setBlocksMovement(blocksMovement: boolean): Entity {
+    this._blocksMovement = blocksMovement;
+
+    return this;
+  }
+
+  setName(name: string): Entity {
+    this._name = name;
+
+    return this;
+  }
+
+  setSpawnChance(chance: number): Entity {
+    this._spawnChance = chance;
 
     return this;
   }

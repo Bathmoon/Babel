@@ -1,0 +1,15 @@
+{
+  "symbol": "o",
+  "foreGroundColor": "#3f7f3f",
+  "backGroundColor": "#000",
+  "name": "Orc",
+  "blocksMovement": true,
+  "sightRange": 4,
+  "spawnChance": 60,
+  "hp": 10,
+  "attack": 3,
+  "coordinate": {
+    "x": 0,
+    "y": 0
+  }
+}

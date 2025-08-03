@@ -1,0 +1,15 @@
+{
+  "symbol": "@",
+  "foreGroundColor": "#fff",
+  "backGroundColor": "#000",
+  "name": "Player",
+  "blocksMovement": true,
+  "sightRange": 8,
+  "spawnChance": 100,
+  "hp": 10,
+  "attack": 3,
+  "coordinate": {
+    "x": 0,
+    "y": 0
+  }
+}

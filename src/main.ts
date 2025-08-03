@@ -31,17 +31,10 @@ declare global {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  const npc = new Entity()
-    .setBackgroundColor("#ffff00")
-    .setSymbol("@")
-    .setSightRange(4)
-    .setCoordinate(Engine.WIDTH / 2 - 5, Engine.HEIGHT / 2);
-
   const player = new Entity()
     .setSymbol("@")
     .setSightRange(8)
     .setCoordinate(Engine.WIDTH / 2, Engine.HEIGHT / 2);
 
-  const entities = [npc, player];
-  window.engine = new Engine(entities, player);
+  window.engine = new Engine(player);
 });
