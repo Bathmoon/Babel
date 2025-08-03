@@ -1,7 +1,9 @@
 import * as ROT from "rot-js";
 
 import { handleInput } from "./input-handler";
+import { Coordinate } from "./components/coordinate";
 import { Entity } from "./entity";
+import { Events } from "./eventSystem";
 import { GameMap } from "./game-map";
 import { generateDungeon } from "./generation";
 
@@ -46,6 +48,10 @@ export class Engine {
       this.update(event);
     });
 
+    Events.on("entityPosition", (coordinate: Coordinate) => {
+      console.log("Entity at position: " + coordinate);
+    });
+
     this.render();
   }
 
@@ -56,19 +62,23 @@ export class Engine {
     if (action) {
       action.perform(this, this.player);
     }
+
+    this.gameMap.updateFov(this.player);
     this.render();
   }
 
   render() {
     this.gameMap.render();
-    this.entities.forEach((e) => {
+    this.entities.forEach((entity) => {
       this.display.draw(
-        e.x,
-        e.y,
-        e.symbol,
-        e.foreGroundColor,
-        e.backGroundColor,
+        entity.x,
+        entity.y,
+        entity.symbol,
+        entity.foreGroundColor,
+        entity.backGroundColor,
       );
+
+      entity.emitCoordinates();
     });
   }
 }

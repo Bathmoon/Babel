@@ -17,6 +17,7 @@ export interface Tile {
   plane: number;
   heightRange: number[];
   dark: Graphic;
+  light: Graphic;
   coordinate: Coordinate;
 }
 

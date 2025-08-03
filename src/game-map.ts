@@ -1,5 +1,6 @@
 import * as ROT from "rot-js";
 
+import { Entity } from "./entity";
 import type { Tile } from "./tiles/tile";
 import { TILES } from "./tiles/tile";
 import { Display } from "rot-js";
@@ -51,18 +52,46 @@ export class GameMap {
     return false;
   }
 
+  updateFov(player: Entity) {
+    // Set all tiles to not visible to ensure that as we move, we don't keep tiles incorrectly lit
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        this.tiles[y][x].isVisible = false;
+      }
+    }
+
+    const fov = new ROT.FOV.PreciseShadowcasting(this.canLightPass.bind(this));
+
+    fov.compute(
+      player.x,
+      player.y,
+      player.sightRange,
+      (x, y, _r, visibility) => {
+        if (visibility === 1) {
+          // Set any tiles in range to visible, also mark them as having been seen
+          this.tiles[y][x].isVisible = true;
+          this.tiles[y][x].isSeen = true;
+        }
+      },
+    );
+  }
+
   render() {
     for (let y = 0; y < this.tiles.length; y++) {
       const row = this.tiles[y];
+
       for (let x = 0; x < row.length; x++) {
         const tile = row[x];
-        this.display.draw(
-          x,
-          y,
-          tile.dark.symbol,
-          tile.dark.foreGroundColor,
-          tile.dark.backGroundColor,
-        );
+
+        let symbol = tile.isVisible ? tile.light.symbol : tile.dark.symbol;
+        let foreGroundColor = tile.isVisible
+          ? tile.light.foreGroundColor
+          : tile.dark.foreGroundColor;
+        let backGroundColor = tile.isVisible
+          ? tile.light.backGroundColor
+          : tile.dark.backGroundColor;
+
+        this.display.draw(x, y, symbol, foreGroundColor, backGroundColor);
       }
     }
   }
