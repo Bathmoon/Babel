@@ -15,17 +15,17 @@ export abstract class ActionWithDirection implements Action {
     this.dy = dy;
   }
 
-  perform(_engine: Engine, _entity: Entity) {}
+  perform(_entity: Entity) {}
 }
 
 export class MovementAction extends ActionWithDirection {
-  perform(engine: Engine, entity: Entity) {
+  perform(entity: Entity) {
     const destX = entity.x + this.dx;
     const destY = entity.y + this.dy;
 
-    if (!engine.gameMap.isInBounds(destX, destY)) return;
-    if (!engine.gameMap.tiles[destY][destX].isWalkable) return;
-    if (engine.gameMap.getBlockingEntityAtLocation(destX, destY)) return;
+    if (!window.engine.gameMap.isInBounds(destX, destY)) return;
+    if (!window.engine.gameMap.tiles[destY][destX].isWalkable) return;
+    if (window.engine.gameMap.getBlockingEntityAtLocation(destX, destY)) return;
 
     entity.move(this.dx, this.dy);
   }

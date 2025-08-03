@@ -5,14 +5,14 @@ import { MeleeAction } from "./combat";
 import { MovementAction } from "./movement";
 
 export class BumpAction extends ActionWithDirection {
-  perform(engine: Engine, entity: Entity) {
+  perform(entity: Entity) {
     const destX = entity.x + this.dx;
     const destY = entity.y + this.dy;
 
-    if (engine.gameMap.getBlockingEntityAtLocation(destX, destY)) {
-      return new MeleeAction(this.dx, this.dy).perform(engine, entity);
+    if (window.engine.gameMap.getBlockingEntityAtLocation(destX, destY)) {
+      return new MeleeAction(this.dx, this.dy).perform(entity);
     } else {
-      return new MovementAction(this.dx, this.dy).perform(engine, entity);
+      return new MovementAction(this.dx, this.dy).perform(entity);
     }
   }
 }

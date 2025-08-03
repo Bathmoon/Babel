@@ -1,4 +1,4 @@
-import { Entity } from "./entity";
+import { Entity } from "./entity/entity";
 import { Engine } from "./engine";
 /*
   Things to keep in mind for refactoring at the end, prior to net new additions

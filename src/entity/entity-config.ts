@@ -1,6 +1,6 @@
-import orc from "./entities/orc.json";
-import troll from "./entities/troll.json";
-import player from "./entities/player.json";
+import orc from "../entities/orc.json";
+import troll from "../entities/troll.json";
+import player from "../entities/player.json";
 
 export interface EntityConfig {
   symbol: string;
@@ -12,6 +12,7 @@ export interface EntityConfig {
   spawnChance: number;
   hp?: number;
   attack?: number;
+  components?: { [componentName: string]: any };
 }
 
 export const entityConfigs: { [key: string]: EntityConfig } = {

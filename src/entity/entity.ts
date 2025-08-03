@@ -1,10 +1,9 @@
 import { Events } from "./eventSystem";
-import { Component } from "./component";
 import { Coordinate } from "./components/coordinate";
 
 export class Entity {
-  // An entity will optionally have a collection of components that define behavior
-  components: Array<Component<any>> = [];
+  // An entity will optionally have a map of components that define behavior
+  components: Map<string, any> = new Map();
 
   /* An entity will always have these basic properties */
 
@@ -24,9 +23,9 @@ export class Entity {
   _blocksMovement: boolean = false;
   _spawnChance: number = 0; // percentage from 0-100
 
-  // We add components and properties using the build pattern
-  addComponent(component: Component<any>): Entity {
-    this.components.push(component);
+  // We can add components and properties using the build pattern
+  setComponent(name: string, component: any): Entity {
+    this.components.set(name, component);
 
     return this;
   }
@@ -141,6 +140,20 @@ export class Entity {
     this._spawnChance = chance;
 
     return this;
+  }
+
+  /* Post build component methods */
+
+  addComponent(name: string, component: any): void {
+    this.components.set(name, component);
+  }
+
+  getComponent<T>(name: string): T | undefined {
+    return this.components.get(name);
+  }
+
+  hasComponent(name: string): boolean {
+    return this.components.has(name);
   }
 
   // increment coordinates by the directional values supplied

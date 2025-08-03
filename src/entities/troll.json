@@ -11,5 +11,8 @@
   "coordinate": {
     "x": 0,
     "y": 0
+  },
+  "components": {
+    "health": { "baseHp": 15, "currentHp": 15 }
   }
 }

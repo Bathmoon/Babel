@@ -1,24 +1,23 @@
 import { TILES } from "../tiles/tile";
-import type { Tile } from "../tiles/tile";
 import { GameMap } from "../world/game-map";
 import { Display } from "rot-js";
-import { Entity } from "../entity";
+import { Entity } from "../entity/entity";
 import { type EntityConfig, entityConfigs } from "../entity-config";
-import { type Bounds } from "./bounds";
 import { RectangularRoom } from "./room-rect";
+import { EntityBuilder } from "../entity/entity-builder";
 
 function spawnEntity(config: EntityConfig, x: number, y: number): Entity {
-  const entity = new Entity()
+  return new EntityBuilder()
     .setCoordinate(x, y)
     .setSymbol(config.symbol)
     .setName(config.name)
-    .setBackgroundColor(config.backGroundColor) // fixed casing here
-    .setForegroundColor(config.foreGroundColor) // fixed casing here
+    .setBackgroundColor(config.backGroundColor)
+    .setForegroundColor(config.foreGroundColor)
     .setSightRange(config.sightRange)
     .setBlocksMovement(config.blocksMovement)
-    .setSpawnChance(config.spawnChance);
-
-  return entity;
+    .setSpawnChance(config.spawnChance)
+    .withComponentsFromConfig(config.components) // add components here
+    .build();
 }
 
 export function generateDungeon(
