@@ -13,6 +13,7 @@
   "components": {
     "health": { "baseValue": 10 },
     "defense": { "baseValue": 0 },
-    "attack": { "baseValue": 3 }
+    "attack": { "baseValue": 3 },
+    "simpleHostileRoutine": ""
   }
 }

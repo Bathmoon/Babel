@@ -58,6 +58,10 @@ export class Engine {
       console.log(
         `The ${entity.name} wonders when it will get to take a real turn.`,
       );
+
+      if (entity.canPerform()) {
+        entity.perform();
+      }
     });
   }
 

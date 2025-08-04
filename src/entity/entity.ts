@@ -1,5 +1,6 @@
 import { Events } from "../eventSystem";
 import { Coordinate } from "../components/coordinate";
+import { BaseRoutine } from "../components/routine";
 
 export class Entity {
   // An entity will optionally have a map of components that define behavior
@@ -154,6 +155,24 @@ export class Entity {
 
   hasComponent(name: string): boolean {
     return this.components.has(name);
+  }
+
+  canPerform(): boolean {
+    for (let component of this.components.values()) {
+      if (component instanceof BaseRoutine) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  perform() {
+    for (let component of this.components.values()) {
+      if (component instanceof BaseRoutine) {
+        component.perform(this);
+      }
+    }
   }
 
   // increment coordinates by the directional values supplied
