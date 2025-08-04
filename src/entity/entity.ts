@@ -168,9 +168,11 @@ export class Entity {
   }
 
   perform() {
-    for (let component of this.components.values()) {
-      if (component instanceof BaseRoutine) {
-        component.perform(this);
+    if (this.canPerform()) {
+      for (let component of this.components.values()) {
+        if (component instanceof BaseRoutine) {
+          component.perform(this);
+        }
       }
     }
   }

@@ -59,9 +59,7 @@ export class Engine {
         `The ${entity.name} wonders when it will get to take a real turn.`,
       );
 
-      if (entity.canPerform()) {
-        entity.perform();
-      }
+      entity.perform();
     });
   }
 
