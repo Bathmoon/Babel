@@ -20,11 +20,7 @@ export class Engine {
   display: ROT.Display;
   gameMap: GameMap;
 
-  player: Entity;
-
-  constructor(player: Entity) {
-    this.player = player;
-
+  constructor() {
     this.display = new ROT.Display({
       width: Engine.WIDTH,
       height: Engine.HEIGHT,
@@ -40,7 +36,6 @@ export class Engine {
       Engine.MIN_ROOM_SIZE,
       Engine.MAX_ROOM_SIZE,
       Engine.MAX_MONSTERS_PER_ROOM,
-      player,
       this.display,
     );
 
@@ -54,7 +49,7 @@ export class Engine {
       });
     }
 
-    this.gameMap.updateFov(this.player); // update fov for the first time or it wont happen till updating
+    this.gameMap.updateFov(window.player); // update fov for the first time or it wont happen till updating
     this.render();
   }
 
@@ -71,11 +66,11 @@ export class Engine {
     const action = handleInput(event);
 
     if (action) {
-      action.perform(this.player);
+      action.perform(window.player);
     }
 
     this.handleEnemyTurns();
-    this.gameMap.updateFov(this.player);
+    this.gameMap.updateFov(window.player);
     this.render();
   }
 

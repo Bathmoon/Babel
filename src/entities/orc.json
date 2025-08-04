@@ -6,13 +6,13 @@
   "blocksMovement": true,
   "sightRange": 4,
   "spawnChance": 60,
-  "hp": 10,
-  "attack": 3,
   "coordinate": {
     "x": 0,
     "y": 0
   },
   "components": {
-    "health": { "baseHp": 5, "currentHp": 5 }
+    "health": { "baseValue": 10 },
+    "defense": { "baseValue": 0 },
+    "attack": { "baseValue": 3 }
   }
 }

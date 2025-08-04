@@ -5,6 +5,10 @@ export interface MovementMap {
   [key: string]: Action;
 }
 
+export class WaitAction implements Action {
+  perform(_entity: Entity) {}
+}
+
 export abstract class ActionWithDirection implements Action {
   public dx: number;
   public dy: number;

@@ -1,5 +1,5 @@
 import { Entity } from "../entity/entity";
 
-export interface Action {
-  perform: (entity: Entity) => void;
+export abstract class Action {
+  abstract perform: (entity: Entity) => void;
 }

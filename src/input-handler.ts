@@ -1,5 +1,5 @@
 import { type Action } from "./actions/action";
-import { type MovementMap } from "./actions/movement";
+import { type MovementMap, WaitAction } from "./actions/movement";
 import { BumpAction } from "./actions/action-orchestration";
 
 const MOVE_KEYS: MovementMap = {
@@ -18,7 +18,7 @@ const MOVE_KEYS: MovementMap = {
   Numpad2: new BumpAction(0, 1), // move down
   Numpad3: new BumpAction(1, 1), // move diagonally down and to the right
   Numpad6: new BumpAction(1, 0), // move right
-  Numpad5: new BumpAction(0, 0), // wait
+  Numpad5: new WaitAction(), // wait
 };
 
 export function handleInput(event: KeyboardEvent): Action {

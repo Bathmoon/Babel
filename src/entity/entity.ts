@@ -2,7 +2,7 @@ import { Events } from "../eventSystem";
 import { Coordinate } from "../components/coordinate";
 
 export class Entity {
-  // An enbase-tity will optionally have a map of components that define behavior
+  // An entity will optionally have a map of components that define behavior
   components: Map<string, any> = new Map();
 
   /* An entity will always have these basic properties */

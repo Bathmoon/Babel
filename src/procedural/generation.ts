@@ -27,11 +27,12 @@ export function generateDungeon(
   minSize: number,
   maxSize: number,
   maxMonsters: number,
-  player: Entity,
   display: Display,
 ): GameMap {
-  const dungeon = new GameMap(mapWidth, mapHeight, display, [player]);
+  const dungeon = new GameMap(mapWidth, mapHeight, display, []);
   const rooms: RectangularRoom[] = [];
+
+  let isPlayerPlaced = false;
 
   for (let count = 0; count < maxRooms; count++) {
     const width = generateRandomNumber(minSize, maxSize);
@@ -48,6 +49,11 @@ export function generateDungeon(
 
     dungeon.addRoom(x, y, newRoom.tiles);
 
+    if (!isPlayerPlaced) {
+      placePlayer(newRoom, dungeon);
+      isPlayerPlaced = true;
+    }
+
     placeEntities(newRoom, dungeon, maxMonsters);
     rooms.push(newRoom);
   }
@@ -60,10 +66,6 @@ export function generateDungeon(
       dungeon.tiles[tile[1]][tile[0]] = { ...TILES.FLOOR_TILE };
     }
   }
-
-  const startPoint = rooms[0].center;
-  player.x = startPoint[0];
-  player.y = startPoint[1];
 
   return dungeon;
 }
@@ -100,11 +102,31 @@ function* connectRooms(
   }
 }
 
+function placePlayer(room: RectangularRoom, dungeon: GameMap): void {
+  const entries = Object.entries(entityConfigs).filter(
+    ([key]) => key == "player",
+  ); // Convert entries to array of [entityType, config] for player only
+  const x = generateRandomNumber(
+    room.bounds.upperLeftCoordinate.x + 1,
+    room.bounds.lowerRightCoordinate.x - 1,
+  );
+  const y = generateRandomNumber(
+    room.bounds.upperLeftCoordinate.y + 1,
+    room.bounds.lowerRightCoordinate.y - 1,
+  );
+
+  for (const [type, config] of entries) {
+    const entity = spawnEntity(entityConfigs[type], x, y);
+    dungeon.entities.push(entity);
+    window.player = entity;
+  }
+}
+
 function placeEntities(
   room: RectangularRoom,
   dungeon: GameMap,
   maxMonsters: number,
-) {
+): void {
   const numberOfMonstersToAdd = generateRandomNumber(0, maxMonsters);
   const bounds = room.bounds;
   const entries = Object.entries(entityConfigs).filter(
