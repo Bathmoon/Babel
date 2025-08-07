@@ -1,0 +1,94 @@
+import { Display } from "rot-js";
+
+import { Colors } from "./colors";
+
+function drawColoredBar(
+  display: Display,
+  x: number,
+  y: number,
+  width: number,
+  color: string,
+) {
+  for (let position = x; position < x + width; position++) {
+    display.draw(position, y, " ", color, color);
+  }
+}
+
+export function renderHealthBar(
+  display: Display,
+  currentValue: number,
+  maxValue: number,
+  totalWidth: number,
+) {
+  const barWidth = Math.floor((currentValue / maxValue) * totalWidth);
+
+  drawColoredBar(display, 0, 45, totalWidth, Colors.BarEmpty);
+  drawColoredBar(display, 0, 45, barWidth, Colors.BarFilled);
+
+  const healthText = `HP: ${currentValue}/${maxValue}`;
+
+  for (let i = 0; i < healthText.length; i++) {
+    display.drawOver(i + 1, 45, healthText[i], Colors.White, null);
+  }
+}
+
+export function renderNamesAtLocation(x: number, y: number) {
+  const [mouseX, mouseY] = window.engine.mousePosition;
+
+  if (
+    window.engine.gameMap.isInBounds(mouseX, mouseY) &&
+    window.engine.gameMap.tiles[mouseY][mouseX].isVisible
+  ) {
+    const names = window.engine.gameMap.entities
+      .filter((entity) => entity.x === mouseX && entity.y === mouseY)
+      .map(
+        (entity) =>
+          entity.name.charAt(0).toUpperCase() + entity.name.substring(1),
+      )
+      .join(", ");
+
+    window.engine.display.drawText(x, y, names);
+  }
+}
+
+export function renderFrameWithTitle(
+  topLeftX: number,
+  topLeftY: number,
+  width: number,
+  height: number,
+  title: string,
+) {
+  const topLeft = "┌";
+  const topRight = "┐";
+  const bottomLeft = "└";
+  const bottomRight = "┘";
+  const vertical = "│";
+  const horizontal = "─";
+  const leftTitle = "┤";
+  const rightTitle = "├";
+  const empty = " ";
+
+  const innerWidth = width - 2;
+  const innerHeight = height - 2;
+  const remainingAfterTitle = innerWidth - (title.length + 2); // adding two because of the borders on left and right
+  const left = Math.floor(remainingAfterTitle / 2);
+
+  const topRow =
+    topLeft +
+    horizontal.repeat(left) +
+    leftTitle +
+    title +
+    rightTitle +
+    horizontal.repeat(remainingAfterTitle - left) +
+    topRight;
+  const middleRow = vertical + empty.repeat(innerWidth) + vertical;
+  const bottomRow = bottomLeft + horizontal.repeat(innerWidth) + bottomRight;
+
+  window.engine.display.drawText(topLeftX, topLeftY, topRow);
+
+  for (let i = 1; i <= innerHeight; i++) {
+    window.engine.display.drawText(topLeftX, topLeftY + i, middleRow);
+  }
+
+  window.engine.display.drawText(topLeftX, topLeftY + height - 1, bottomRow);
+}
