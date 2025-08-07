@@ -17,7 +17,10 @@ export class RectangularRoom {
 
     // based on the top left corner, create coordinates for the top left and bottom right corners
     this.upperLeftCoordinate = new Coordinate(x, y);
-    this.lowerRightCoordinate = new Coordinate(x + this.width, y + this.height);
+    this.lowerRightCoordinate = new Coordinate(
+      x + this.width - 1,
+      y + this.height - 1,
+    );
 
     this.build();
   }

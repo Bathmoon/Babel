@@ -1,6 +1,8 @@
 import { Events } from "../eventSystem";
 import { Coordinate } from "../components/coordinate";
 import { BaseRoutine } from "../components/routine";
+import { RenderOrder } from "../rendering/layers";
+import { Colors } from "../rendering/colors";
 
 export class Entity {
   // An entity will optionally have a map of components that define behavior
@@ -182,6 +184,27 @@ export class Entity {
     this.entityCoordinate.x += dx;
     this.entityCoordinate.y += dy;
     this.entityCoordinate.z += dz;
+  }
+
+  die() {
+    let deathMessage = "";
+    let foreGroundColor = Colors.EnemyDie;
+
+    if (this._name === "Player") {
+      deathMessage = "You died!";
+      foreGroundColor = Colors.PlayerDie;
+    } else {
+      deathMessage = `${this._name} is dead!`;
+    }
+
+    this.symbol = "%";
+    this.foreGroundColor = "#bf0000";
+    this._blocksMovement = false;
+    this.components.clear();
+    this._name = `Remains of ${this._name}`;
+    this.entityCoordinate.z = RenderOrder.Corpse;
+
+    window.engine.messageLog.addMessage(deathMessage, foreGroundColor);
   }
 
   emitCoordinates() {

@@ -37,8 +37,15 @@ export class GameMap {
     }
   }
 
-  public get nonPlayerEntities(): Entity[] {
-    return this.entities.filter((entity) => entity.name !== "Player");
+  public get actors(): Entity[] {
+    return this.entities.filter(
+      (entity) => entity.canPerform() || entity.name == "Player",
+    );
+  }
+
+  // consider using actor coordinate emits here?
+  getActorAtLocation(x: number, y: number): Entity | undefined {
+    return this.actors.find((actor) => actor.x === x && actor.y === y);
   }
 
   getBlockingEntityAtLocation(x: number, y: number): Entity | undefined {
@@ -96,6 +103,9 @@ export class GameMap {
   render() {
     for (let y = 0; y < this.tiles.length; y++) {
       const row = this.tiles[y];
+      const sortedEntities = this.entities
+        .slice()
+        .sort((a, b) => a.entityCoordinate.z - b.entityCoordinate.z);
 
       for (let x = 0; x < row.length; x++) {
         const tile = row[x];
@@ -111,8 +121,8 @@ export class GameMap {
         // draw tiles
         this.display.draw(x, y, symbol, foreGroundColor, backGroundColor);
 
-        // draw entities
-        this.entities.forEach((entity) => {
+        // draw entities sorted by z axis
+        sortedEntities.forEach((entity) => {
           if (this.tiles[entity.y][entity.x].isVisible || window.debug) {
             this.display.draw(
               entity.x,

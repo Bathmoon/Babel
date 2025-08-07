@@ -57,6 +57,7 @@ export class EntityBuilder {
         const componentInstance = createComponentInstance(
           componentName,
           componentData,
+          this.entity,
         );
 
         if (componentInstance) {

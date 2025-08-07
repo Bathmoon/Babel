@@ -31,4 +31,5 @@ window.addEventListener("DOMContentLoaded", () => {
   window.verboseDebug = false;
 
   window.engine = new Engine();
+  window.engine.render();
 });

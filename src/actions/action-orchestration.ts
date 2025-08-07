@@ -8,7 +8,7 @@ export class BumpAction extends ActionWithDirection {
     const destX = entity.x + this.dx;
     const destY = entity.y + this.dy;
 
-    if (window.engine.gameMap.getBlockingEntityAtLocation(destX, destY)) {
+    if (window.engine.gameMap.getActorAtLocation(destX, destY)) {
       return new MeleeAction(this.dx, this.dy).perform(entity);
     } else {
       return new MovementAction(this.dx, this.dy).perform(entity);
