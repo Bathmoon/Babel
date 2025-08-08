@@ -3,6 +3,7 @@ import { Coordinate } from "../components/coordinate";
 import { BaseRoutine } from "../components/routine";
 import { RenderOrder } from "../rendering/layers";
 import { Colors } from "../rendering/colors";
+import { GameMap } from "../world/game-map";
 
 export class Entity {
   // An entity will optionally have a map of components that define behavior
@@ -26,7 +27,10 @@ export class Entity {
   _blocksMovement: boolean = false;
   _spawnChance: number = 0; // percentage from 0-100
 
-  // We can add components and properties using the build pattern
+  // The Game Map the entity currently belongs to
+  _currentMap: GameMap | null = null;
+
+  // We can add components and properties using the fluent interface pattern
   setComponent(name: string, component: any): Entity {
     this.components.set(name, component);
 
@@ -67,6 +71,14 @@ export class Entity {
 
   get spawnChance(): number {
     return this._spawnChance;
+  }
+
+  get currentMap(): GameMap | null {
+    return this._currentMap;
+  }
+
+  set currentMap(map: GameMap) {
+    this._currentMap = map;
   }
 
   set x(value: number) {
@@ -111,6 +123,12 @@ export class Entity {
 
   setBackgroundColor(color: string): Entity {
     this.backGroundColor = color;
+
+    return this;
+  }
+
+  setGameMap(map: GameMap): Entity {
+    this._currentMap = map;
 
     return this;
   }

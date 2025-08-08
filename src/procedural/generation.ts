@@ -6,7 +6,12 @@ import { type EntityConfig, entityConfigs } from "../entity/entity-config";
 import { RectangularRoom } from "./room-rect";
 import { EntityBuilder } from "../entity/entity-builder";
 
-function spawnEntity(config: EntityConfig, x: number, y: number): Entity {
+function spawnEntity(
+  config: EntityConfig,
+  x: number,
+  y: number,
+  map: GameMap,
+): Entity {
   return new EntityBuilder()
     .setCoordinate(x, y)
     .setSymbol(config.symbol)
@@ -17,6 +22,7 @@ function spawnEntity(config: EntityConfig, x: number, y: number): Entity {
     .setBlocksMovement(config.blocksMovement)
     .setSpawnChance(config.spawnChance)
     .withComponentsFromConfig(config.components) // add components here
+    .setGameMap(map)
     .build();
 }
 
@@ -116,7 +122,7 @@ function placePlayer(room: RectangularRoom, dungeon: GameMap): void {
   );
 
   for (const [type, config] of entries) {
-    const entity = spawnEntity(entityConfigs[type], x, y);
+    const entity = spawnEntity(entityConfigs[type], x, y, dungeon);
     dungeon.entities.push(entity);
     window.player = entity;
   }
@@ -171,7 +177,7 @@ function placeEntities(
 
     if (selectedType) {
       // Spawn entity using the selected config
-      const entity = spawnEntity(entityConfigs[selectedType], x, y);
+      const entity = spawnEntity(entityConfigs[selectedType], x, y, dungeon);
       dungeon.entities.push(entity);
     }
   }

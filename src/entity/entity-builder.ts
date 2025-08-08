@@ -1,4 +1,5 @@
 import { Entity } from "./entity";
+import { GameMap } from "../world/game-map";
 import { createComponentInstance } from "../components/componentFactory";
 
 export class EntityBuilder {
@@ -65,6 +66,12 @@ export class EntityBuilder {
         }
       }
     }
+
+    return this;
+  }
+
+  setGameMap(map: GameMap): this {
+    this.entity.currentMap = map;
 
     return this;
   }

@@ -13,7 +13,13 @@ export class MeleeAction extends ActionWithDirection {
     const foreGroundColor =
       entity.name === "Player" ? Colors.PlayerAttack : Colors.EnemyAttack;
 
-    if (!target) return;
+    if (!target) {
+      window.engine.messageLog.addMessage(
+        "Nothing to attack",
+        Colors.Impossible,
+      );
+      throw new Error("That way is blocked.");
+    }
 
     const attack = entity.getComponent<Attack>("attack")?.currentValue ?? 0;
     const defense = target.getComponent<Defense>("defense")?.currentValue ?? 0;

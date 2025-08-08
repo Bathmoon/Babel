@@ -37,6 +37,10 @@ export class GameMap {
     }
   }
 
+  public get gameMap(): GameMap {
+    return this;
+  }
+
   public get actors(): Entity[] {
     return this.entities.filter(
       (entity) => entity.canPerform() || entity.name == "Player",

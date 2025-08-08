@@ -5,12 +5,13 @@ import { Engine } from "./engine";
 
   1. Debug mode
     a. Make sure there's an option to view the whole map, disregarding fov
+    b. now I need to properly go back to hiding most of it..
   2. Split out the generateDungeon function into multiple functions
   3. It feels like something needs to keep track of the list of rooms for a given game map
-  5. Simplify files if possible, single classes, fewer operations and types of operations per file, e.g. no entity and actor in entity.ts
-  6. I want entities (and tiles) to know their own coordinates - and ideally have event handlers for mouseover, vs having a global one
   7. Add a "debug" message log?
-  10. Import json files as consumables etc instead of hardcoding classes for everything all over the place?
+  8. Pop up full log on death
+
+  - check at end, refactor may have fixed
   11. When loading the game, the stairs location is not remembered and defaults to 0, 0
   12. game-view.. why do I need to do this for currentxp but nothing else? player.level.currentXp = playerEntity.level?.currentXp ?? 0;
   14. toggling equip does not work

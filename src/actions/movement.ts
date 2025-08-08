@@ -1,5 +1,6 @@
 import { Entity } from "../entity/entity";
 import { type Action } from "./action";
+import { Colors } from "../rendering/colors";
 
 export interface MovementMap {
   [key: string]: Action;
@@ -26,10 +27,22 @@ export class MovementAction extends ActionWithDirection {
     const destX = entity.x + this.dx;
     const destY = entity.y + this.dy;
 
-    if (!window.engine.gameMap.isInBounds(destX, destY)) return;
-    if (!window.engine.gameMap.tiles[destY][destX].isWalkable) return;
-    if (window.engine.gameMap.getBlockingEntityAtLocation(destX, destY)) return;
+    if (!window.engine.gameMap.isInBounds(destX, destY))
+      this.printIsBlockedMessage();
+    if (!window.engine.gameMap.tiles[destY][destX].isWalkable)
+      this.printIsBlockedMessage();
+    if (window.engine.gameMap.getBlockingEntityAtLocation(destX, destY))
+      this.printIsBlockedMessage();
 
     entity.move(this.dx, this.dy);
+  }
+
+  printIsBlockedMessage() {
+    window.engine.messageLog.addMessage(
+      "That way is blocked.",
+      Colors.Impossible,
+    );
+
+    throw new Error("That way is blocked.");
   }
 }
